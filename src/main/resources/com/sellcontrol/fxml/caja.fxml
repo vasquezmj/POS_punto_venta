@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sellcontrol.controller.CajaController"
+            styleClass="dashboard-container">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Label text="Control de Caja" styleClass="toolbar-title">
+                <font><Font size="18"/></font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="← Volver" onAction="#handleVolver" styleClass="btn-secondary"/>
+        </HBox>
+    </top>
+
+    <center>
+        <HBox spacing="20">
+            <padding><Insets top="15" right="20" bottom="15" left="20"/></padding>
+
+            <!-- Formulario -->
+            <VBox spacing="10" prefWidth="300">
+                <Label text="Registrar Movimiento" styleClass="section-title">
+                    <font><Font size="15"/></font>
+                </Label>
+                <Label text="Tipo:"/>
+                <ComboBox fx:id="cmbTipoMov" maxWidth="Infinity"/>
+                <Label text="Monto:"/>
+                <TextField fx:id="txtMonto" promptText="0.00" styleClass="form-input"/>
+                <Label text="Motivo:"/>
+                <TextField fx:id="txtMotivo" promptText="Motivo del movimiento" styleClass="form-input"/>
+                <Button text="💰 Registrar" onAction="#handleRegistrar" styleClass="btn-primary" maxWidth="Infinity"/>
+            </VBox>
+
+            <!-- Tabla -->
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text="Movimientos de Hoy" styleClass="section-title">
+                    <font><Font size="15"/></font>
+                </Label>
+                <TableView fx:id="tablaMovimientos" VBox.vgrow="ALWAYS" styleClass="data-table">
+                    <columns>
+                        <TableColumn fx:id="colMId" text="ID" prefWidth="50"/>
+                        <TableColumn fx:id="colMTipo" text="Tipo" prefWidth="90"/>
+                        <TableColumn fx:id="colMMonto" text="Monto" prefWidth="100"/>
+                        <TableColumn fx:id="colMMotivo" text="Motivo" prefWidth="200"/>
+                        <TableColumn fx:id="colMUsuario" text="Usuario" prefWidth="120"/>
+                        <TableColumn fx:id="colMFecha" text="Fecha" prefWidth="150"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </HBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" styleClass="action-bar">
+            <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
+            <Label fx:id="lblMensaje" text="" styleClass="status-label"/>
+        </HBox>
+    </bottom>
+</BorderPane>

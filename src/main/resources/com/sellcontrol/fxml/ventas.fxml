@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sellcontrol.controller.VentaController"
+            styleClass="dashboard-container">
+
+    <!-- Barra Superior -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+            <padding>
+                <Insets top="12" right="20" bottom="12" left="20"/>
+            </padding>
+            <Label text="Módulo de Ventas" styleClass="toolbar-title">
+                <font><Font size="18"/></font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="🔄 Refrescar" onAction="#handleRefrescar" styleClass="btn-secondary"/>
+            <Button text="← Volver" onAction="#handleVolver" styleClass="btn-secondary"/>
+        </HBox>
+    </top>
+
+    <!-- Contenido con pestañas -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE">
+            <padding>
+                <Insets top="10" right="10" bottom="0" left="10"/>
+            </padding>
+
+            <!-- Pestaña: Nueva Venta -->
+            <Tab text="🛒 Nueva Venta">
+                <HBox spacing="15">
+                    <padding>
+                        <Insets top="15" right="15" bottom="15" left="15"/>
+                    </padding>
+
+                    <!-- Panel izquierdo: agregar productos -->
+                    <VBox spacing="10" prefWidth="320">
+                        <Label text="Agregar producto" styleClass="section-title">
+                            <font><Font size="15"/></font>
+                        </Label>
+
+                        <Label text="Producto:"/>
+                        <ComboBox fx:id="cmbProducto" maxWidth="Infinity" promptText="Seleccione un producto"/>
+
+                        <Label fx:id="lblPrecioUnitario" text="—" style="-fx-text-fill: #7f8c8d;"/>
+
+                        <Label text="Cantidad:"/>
+                        <TextField fx:id="txtCantidad" promptText="Ej: 1.5"/>
+
+                        <Label fx:id="lblSubtotal" text="₡0.00" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+
+                        <HBox spacing="8">
+                            <Button text="➕ Agregar" onAction="#handleAgregarProducto" styleClass="btn-primary"/>
+                            <Button text="➖ Quitar" onAction="#handleQuitarProducto" styleClass="btn-danger"/>
+                        </HBox>
+
+                        <Separator/>
+
+                        <Label text="Método de pago:"/>
+                        <ComboBox fx:id="cmbMetodoPago" maxWidth="Infinity"/>
+
+                        <CheckBox fx:id="chkFiado" text="Venta fiada (pendiente)"/>
+                        <Label fx:id="lblClienteLabel" text="Nombre del cliente:"/>
+                        <TextField fx:id="txtClienteNombre" promptText="Nombre del deudor"/>
+
+                        <Separator/>
+
+                        <Label fx:id="lblTotal" text="₡0.00" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+
+                        <HBox spacing="8">
+                            <Button text="✅ Registrar Venta" onAction="#handleRegistrarVenta" styleClass="btn-primary" prefWidth="160"/>
+                            <Button text="🗑️ Limpiar" onAction="#handleLimpiarCarrito" styleClass="btn-warning"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Panel derecho: carrito -->
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Carrito de venta" styleClass="section-title">
+                            <font><Font size="15"/></font>
+                        </Label>
+                        <TableView fx:id="tablaDetalle" VBox.vgrow="ALWAYS" styleClass="data-table">
+                            <columns>
+                                <TableColumn fx:id="colDetProducto" text="Producto" prefWidth="200"/>
+                                <TableColumn fx:id="colDetCantidad" text="Cantidad" prefWidth="90"/>
+                                <TableColumn fx:id="colDetUnidad" text="Unidad" prefWidth="80"/>
+                                <TableColumn fx:id="colDetSubtotal" text="Subtotal" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </HBox>
+            </Tab>
+
+            <!-- Pestaña: Ventas del Día -->
+            <Tab text="📋 Ventas del Día">
+                <VBox spacing="10">
+                    <padding>
+                        <Insets top="15" right="15" bottom="15" left="15"/>
+                    </padding>
+                    <TableView fx:id="tablaVentasHoy" VBox.vgrow="ALWAYS" styleClass="data-table">
+                        <columns>
+                            <TableColumn fx:id="colVId" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colVFecha" text="Fecha/Hora" prefWidth="150"/>
+                            <TableColumn fx:id="colVUsuario" text="Cajero" prefWidth="130"/>
+                            <TableColumn fx:id="colVTotal" text="Total" prefWidth="100"/>
+                            <TableColumn fx:id="colVMetodo" text="Método" prefWidth="100"/>
+                            <TableColumn fx:id="colVEstado" text="Estado" prefWidth="100"/>
+                            <TableColumn fx:id="colVCliente" text="Cliente" prefWidth="130"/>
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="🔍 Ver Detalle" onAction="#handleVerDetalle" styleClass="btn-secondary"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- Pestaña: Fiados (Pendientes) -->
+            <Tab text="💳 Fiados">
+                <VBox spacing="10">
+                    <padding>
+                        <Insets top="15" right="15" bottom="15" left="15"/>
+                    </padding>
+                    <TableView fx:id="tablaFiados" VBox.vgrow="ALWAYS" styleClass="data-table">
+                        <columns>
+                            <TableColumn fx:id="colFId" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colFFecha" text="Fecha" prefWidth="150"/>
+                            <TableColumn fx:id="colFCliente" text="Cliente" prefWidth="180"/>
+                            <TableColumn fx:id="colFTotal" text="Total" prefWidth="100"/>
+                            <TableColumn fx:id="colFUsuario" text="Cajero" prefWidth="130"/>
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="💰 Cobrar Seleccionado" onAction="#handleCobrarFiado" styleClass="btn-primary"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+    <!-- Barra inferior -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" styleClass="action-bar">
+            <padding>
+                <Insets top="8" right="20" bottom="8" left="20"/>
+            </padding>
+            <Label fx:id="lblMensaje" text="" styleClass="status-label"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

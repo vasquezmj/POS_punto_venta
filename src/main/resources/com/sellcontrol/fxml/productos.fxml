@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sellcontrol.controller.ProductoController"
+            styleClass="dashboard-container">
+
+    <!-- Barra Superior -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+            <padding>
+                <Insets top="12" right="20" bottom="12" left="20"/>
+            </padding>
+            <Label text="Gestión de Productos" styleClass="toolbar-title">
+                <font><Font size="18"/></font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Barra de búsqueda -->
+            <TextField fx:id="txtBuscar" promptText="Buscar producto..." prefWidth="220"
+                       styleClass="form-input" onAction="#handleBuscar"/>
+            <Button text="🔍 Buscar" onAction="#handleBuscar" styleClass="btn-secondary"/>
+            <Button text="← Volver" onAction="#handleVolver" styleClass="btn-secondary"/>
+        </HBox>
+    </top>
+
+    <!-- Tabla de Productos -->
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="15" right="20" bottom="10" left="20"/>
+            </padding>
+
+            <TableView fx:id="tablaProductos" VBox.vgrow="ALWAYS" styleClass="data-table">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colNombre" text="Nombre" prefWidth="220"/>
+                    <TableColumn fx:id="colTipo" text="Tipo" prefWidth="100"/>
+                    <TableColumn fx:id="colUnidad" text="Venta por" prefWidth="90"/>
+                    <TableColumn fx:id="colPrecio" text="Precio" prefWidth="100"/>
+                    <TableColumn fx:id="colActivo" text="Activo" prefWidth="70"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <!-- Barra inferior: botones de acción -->
+    <bottom>
+        <HBox alignment="CENTER" spacing="10" styleClass="action-bar">
+            <padding>
+                <Insets top="10" right="20" bottom="15" left="20"/>
+            </padding>
+            <Button text="➕ Nuevo" onAction="#handleNuevo" styleClass="btn-primary"/>
+            <Button text="✏️ Editar" onAction="#handleEditar" styleClass="btn-secondary"/>
+            <Button text="🔄 Activar/Desactivar" onAction="#handleToggleActivo" styleClass="btn-warning"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblMensaje" text="" styleClass="status-label"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

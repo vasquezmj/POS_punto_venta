@@ -1,0 +1,221 @@
+/* ============================================
+   POS SellControl - Estilos Globales
+   Optimizado para bajos recursos (sin animaciones pesadas)
+   ============================================ */
+
+/* --- Colores base --- */
+* {
+    -fx-primary: #2c3e50;
+    -fx-primary-light: #34495e;
+    -fx-accent: #27ae60;
+    -fx-accent-hover: #2ecc71;
+    -fx-danger: #e74c3c;
+    -fx-danger-hover: #c0392b;
+    -fx-warning: #f39c12;
+    -fx-warning-hover: #e67e22;
+    -fx-bg: #ecf0f1;
+    -fx-bg-card: #ffffff;
+    -fx-text: #2c3e50;
+    -fx-text-muted: #7f8c8d;
+}
+
+/* --- Contenedores principales --- */
+.login-container {
+    -fx-background-color: linear-gradient(to bottom, #2c3e50, #3498db);
+}
+
+.dashboard-container {
+    -fx-background-color: #ecf0f1;
+}
+
+/* --- Tipografía --- */
+.app-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+.login-subtitle {
+    -fx-text-fill: #bdc3c7;
+}
+
+.section-title {
+    -fx-text-fill: #2c3e50;
+    -fx-font-weight: bold;
+}
+
+.form-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+}
+
+/* --- Inputs --- */
+.form-input {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: transparent;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+.form-input:focused {
+    -fx-border-color: #27ae60;
+    -fx-border-width: 2;
+    -fx-background-color: #ffffff;
+}
+
+/* --- Botones --- */
+.btn-primary {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #2ecc71;
+}
+
+.btn-secondary {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #2980b9;
+}
+
+.btn-danger {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #c0392b;
+}
+
+.btn-warning {
+    -fx-background-color: #f39c12;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.btn-warning:hover {
+    -fx-background-color: #e67e22;
+}
+
+/* --- Botones de Menú (Dashboard) --- */
+.btn-menu {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #2c3e50;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 4, 0, 0, 2);
+}
+
+.btn-menu:hover {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-border-color: #27ae60;
+}
+
+/* --- Toolbar --- */
+.toolbar {
+    -fx-background-color: #2c3e50;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 6, 0, 0, 3);
+}
+
+.toolbar-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+.toolbar-subtitle {
+    -fx-text-fill: #bdc3c7;
+    -fx-font-size: 12px;
+}
+
+/* --- Tablas --- */
+.data-table {
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4;
+}
+
+.data-table .column-header {
+    -fx-background-color: #2c3e50;
+}
+
+.data-table .column-header .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.data-table .table-row-cell {
+    -fx-border-color: transparent transparent #ecf0f1 transparent;
+}
+
+.data-table .table-row-cell:selected {
+    -fx-background-color: #d5f5e3;
+}
+
+.data-table .table-row-cell:selected .text {
+    -fx-fill: #2c3e50;
+}
+
+/* --- Barra de acciones --- */
+.action-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #bdc3c7 transparent transparent transparent;
+}
+
+/* --- Labels de estado --- */
+.error-label {
+    -fx-text-fill: #e74c3c;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f8c8d;
+}
+
+/* --- Tarjetas de resumen (Reportes) --- */
+.card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 3, 0, 0, 1);
+}
+
+.card-ganancia {
+    -fx-background-color: #d5f5e3;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #27ae60;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(39, 174, 96, 0.15), 4, 0, 0, 2);
+}

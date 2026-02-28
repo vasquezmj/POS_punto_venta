@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sellcontrol.controller.GastoController"
+            styleClass="dashboard-container">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Label text="Gastos y Merma" styleClass="toolbar-title">
+                <font><Font size="18"/></font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="← Volver" onAction="#handleVolver" styleClass="btn-secondary"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE">
+            <padding><Insets top="10" right="10" bottom="0" left="10"/></padding>
+
+            <!-- Pestaña Gastos -->
+            <Tab text="📋 Gastos">
+                <HBox spacing="15">
+                    <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+                    <VBox spacing="10" prefWidth="280">
+                        <Label text="Registrar Gasto" styleClass="section-title">
+                            <font><Font size="15"/></font>
+                        </Label>
+                        <Label text="Tipo:"/>
+                        <ComboBox fx:id="cmbTipoGasto" maxWidth="Infinity"/>
+                        <Label text="Monto:"/>
+                        <TextField fx:id="txtMontoGasto" promptText="0.00" styleClass="form-input"/>
+                        <Label text="Descripción:"/>
+                        <TextField fx:id="txtDescGasto" promptText="Descripción del gasto" styleClass="form-input"/>
+                        <Button text="💸 Registrar Gasto" onAction="#handleRegistrarGasto" styleClass="btn-primary" maxWidth="Infinity"/>
+                    </VBox>
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Gastos de Hoy" styleClass="section-title">
+                            <font><Font size="15"/></font>
+                        </Label>
+                        <TableView fx:id="tablaGastos" VBox.vgrow="ALWAYS" styleClass="data-table">
+                            <columns>
+                                <TableColumn fx:id="colGId" text="ID" prefWidth="50"/>
+                                <TableColumn fx:id="colGTipo" text="Tipo" prefWidth="140"/>
+                                <TableColumn fx:id="colGMonto" text="Monto" prefWidth="100"/>
+                                <TableColumn fx:id="colGDesc" text="Descripción" prefWidth="200"/>
+                                <TableColumn fx:id="colGFecha" text="Fecha" prefWidth="150"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </HBox>
+            </Tab>
+
+            <!-- Pestaña Merma -->
+            <Tab text="🗑️ Merma">
+                <HBox spacing="15">
+                    <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+                    <VBox spacing="10" prefWidth="280">
+                        <Label text="Registrar Merma" styleClass="section-title">
+                            <font><Font size="15"/></font>
+                        </Label>
+                        <Label text="Descripción:"/>
+                        <TextField fx:id="txtDescMerma" promptText="Ej: Tomates dañados" styleClass="form-input"/>
+                        <Label text="Monto aproximado:"/>
+                        <TextField fx:id="txtMontoMerma" promptText="0.00" styleClass="form-input"/>
+                        <Button text="🗑️ Registrar Merma" onAction="#handleRegistrarMerma" styleClass="btn-warning" maxWidth="Infinity"/>
+                    </VBox>
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Mermas de Hoy" styleClass="section-title">
+                            <font><Font size="15"/></font>
+                        </Label>
+                        <TableView fx:id="tablaMermas" VBox.vgrow="ALWAYS" styleClass="data-table">
+                            <columns>
+                                <TableColumn fx:id="colMeId" text="ID" prefWidth="50"/>
+                                <TableColumn fx:id="colMeDesc" text="Descripción" prefWidth="250"/>
+                                <TableColumn fx:id="colMeMonto" text="Monto Aprox." prefWidth="120"/>
+                                <TableColumn fx:id="colMeFecha" text="Fecha" prefWidth="150"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </HBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" styleClass="action-bar">
+            <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
+            <Label fx:id="lblMensaje" text="" styleClass="status-label"/>
+        </HBox>
+    </bottom>
+</BorderPane>

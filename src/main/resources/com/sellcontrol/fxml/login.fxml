@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="20" xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.sellcontrol.controller.LoginController"
+      styleClass="login-container">
+
+    <padding>
+        <Insets top="40" right="50" bottom="40" left="50"/>
+    </padding>
+
+    <!-- Título -->
+    <Label text="POS SellControl" styleClass="app-title">
+        <font><Font size="28"/></font>
+    </Label>
+
+    <Label text="Inicio de Sesión" styleClass="login-subtitle">
+        <font><Font size="14"/></font>
+    </Label>
+
+    <!-- Formulario -->
+    <VBox spacing="12" alignment="CENTER" maxWidth="280">
+        <Label text="Usuario:" styleClass="form-label"/>
+        <TextField fx:id="txtUsuario" promptText="Ingrese su usuario" styleClass="form-input"/>
+
+        <Label text="Contraseña:" styleClass="form-label"/>
+        <PasswordField fx:id="txtPassword" promptText="Ingrese su contraseña" styleClass="form-input"
+                        onAction="#handleLogin"/>
+
+        <Label fx:id="lblError" styleClass="error-label"/>
+
+        <Button text="Iniciar Sesión" onAction="#handleLogin" styleClass="btn-primary"
+                maxWidth="Infinity"/>
+    </VBox>
+
+</VBox>

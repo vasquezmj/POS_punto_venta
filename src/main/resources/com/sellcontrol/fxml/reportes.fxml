@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sellcontrol.controller.ReporteController"
+            styleClass="dashboard-container">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="toolbar">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Label text="Reportes" styleClass="toolbar-title">
+                <font><Font size="18"/></font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Desde:" style="-fx-text-fill: white;"/>
+            <DatePicker fx:id="dpDesde" prefWidth="140"/>
+            <Label text="Hasta:" style="-fx-text-fill: white;"/>
+            <DatePicker fx:id="dpHasta" prefWidth="140"/>
+            <Button text="📊 Generar" onAction="#handleGenerarReporte" styleClass="btn-primary"/>
+            <Button text="Hoy" onAction="#handleHoy" styleClass="btn-secondary"/>
+            <Button text="Semana" onAction="#handleSemana" styleClass="btn-secondary"/>
+            <Button text="← Volver" onAction="#handleVolver" styleClass="btn-secondary"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="15">
+            <padding><Insets top="15" right="20" bottom="15" left="20"/></padding>
+
+            <!-- Resumen en tarjetas -->
+            <HBox spacing="12" alignment="CENTER">
+                <!-- Ventas -->
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="Total Ventas" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblTotalVentas" text="₡0.00" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="Cobradas" style="-fx-text-fill: #27ae60; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblVentasCobradas" text="₡0.00" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="Pendientes" style="-fx-text-fill: #f39c12; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblVentasPendientes" text="₡0.00" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                </VBox>
+
+                <!-- Métodos de pago -->
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="Efectivo" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblEfectivo" text="₡0.00" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="Tarjeta" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblTarjeta" text="₡0.00" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="SINPE" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblSinpe" text="₡0.00" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Gastos, merma y ganancia -->
+            <HBox spacing="12" alignment="CENTER">
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="Gastos" style="-fx-text-fill: #e74c3c; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblGastos" text="₡0.00" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4" styleClass="card" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="Merma" style="-fx-text-fill: #e74c3c; -fx-font-size: 11px;"/>
+                    <Label fx:id="lblMerma" text="₡0.00" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4" styleClass="card-ganancia" HBox.hgrow="ALWAYS">
+                    <padding><Insets top="12" right="15" bottom="12" left="15"/></padding>
+                    <Label text="GANANCIA REAL" style="-fx-text-fill: #2c3e50; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblGanancia" text="₡0.00" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Tabla de ventas del rango -->
+            <TableView fx:id="tablaVentas" VBox.vgrow="ALWAYS" styleClass="data-table">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colFecha" text="Fecha/Hora" prefWidth="160"/>
+                    <TableColumn fx:id="colCajero" text="Cajero" prefWidth="130"/>
+                    <TableColumn fx:id="colTotal" text="Total" prefWidth="100"/>
+                    <TableColumn fx:id="colMetodo" text="Método" prefWidth="100"/>
+                    <TableColumn fx:id="colEstado" text="Estado" prefWidth="100"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" styleClass="action-bar">
+            <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
+            <Label fx:id="lblMensaje" text="" styleClass="status-label"/>
+        </HBox>
+    </bottom>
+</BorderPane>
