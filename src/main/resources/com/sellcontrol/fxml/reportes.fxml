@@ -24,6 +24,7 @@
             <Button text="📊 Generar" onAction="#handleGenerarReporte" styleClass="btn-primary"/>
             <Button text="Hoy" onAction="#handleHoy" styleClass="btn-secondary"/>
             <Button text="Semana" onAction="#handleSemana" styleClass="btn-secondary"/>
+            <Button text="📥 Exportar Excel" onAction="#handleExportarExcel" styleClass="btn-primary"/>
             <Button text="← Volver" onAction="#handleVolver" styleClass="btn-secondary"/>
         </HBox>
     </top>

@@ -2,12 +2,16 @@ package com.sellcontrol.controller;
 
 import com.sellcontrol.App;
 import com.sellcontrol.model.MovimientoCaja;
+import com.sellcontrol.service.AuthService;
 import com.sellcontrol.service.CajaService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controlador del módulo de Caja.
@@ -41,7 +45,14 @@ public class CajaController {
 
     @FXML
     public void initialize() {
-        cmbTipoMov.setItems(FXCollections.observableArrayList("INGRESO", "CAMBIO"));
+        // Tipos de movimiento: RETIRO solo disponible para ADMIN
+        List<String> tipos = new ArrayList<>();
+        tipos.add("INGRESO");
+        tipos.add("CAMBIO");
+        if (AuthService.isAdmin()) {
+            tipos.add("RETIRO");
+        }
+        cmbTipoMov.setItems(FXCollections.observableArrayList(tipos));
         cmbTipoMov.setValue("INGRESO");
 
         colMId.setCellValueFactory(new PropertyValueFactory<>("id"));

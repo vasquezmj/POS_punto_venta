@@ -45,7 +45,10 @@
                             <font><Font size="15"/></font>
                         </Label>
 
-                        <Label text="Producto:"/>
+                        <Label text="Buscar ID o Nombre:"/>
+                        <TextField fx:id="txtBuscarProducto" promptText="Ingrese ID o nombre del producto..."/>
+
+                        <Label text="Producto seleccionado:"/>
                         <ComboBox fx:id="cmbProducto" maxWidth="Infinity" promptText="Seleccione un producto"/>
 
                         <Label fx:id="lblPrecioUnitario" text="—" style="-fx-text-fill: #7f8c8d;"/>
@@ -92,6 +95,13 @@
                                 <TableColumn fx:id="colDetSubtotal" text="Subtotal" prefWidth="100"/>
                             </columns>
                         </TableView>
+                        <HBox alignment="CENTER_RIGHT" spacing="10">
+                            <padding>
+                                <Insets top="5" right="10" bottom="5" left="10"/>
+                            </padding>
+                            <Label text="TOTAL:" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                            <Label fx:id="lblTotalTabla" text="₡0.00" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+                        </HBox>
                     </VBox>
                 </HBox>
             </Tab>
@@ -115,6 +125,7 @@
                     </TableView>
                     <HBox spacing="10">
                         <Button text="🔍 Ver Detalle" onAction="#handleVerDetalle" styleClass="btn-secondary"/>
+                        <Button text="🖨️ Imprimir Ticket" onAction="#handleImprimirTicket" styleClass="btn-primary"/>
                     </HBox>
                 </VBox>
             </Tab>

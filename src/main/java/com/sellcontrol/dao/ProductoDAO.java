@@ -133,6 +133,41 @@ public class ProductoDAO {
         return false;
     }
 
+    /**
+     * Elimina un producto por ID.
+     * Falla si el producto tiene ventas asociadas (integridad referencial).
+     *
+     * @return true si se eliminó, false si falla o tiene dependencias.
+     */
+    public boolean delete(int id) {
+        // Verificar si tiene ventas asociadas
+        String checkSql = "SELECT COUNT(*) FROM detalle_venta WHERE producto_id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+                PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+            checkPs.setInt(1, id);
+            try (ResultSet rs = checkPs.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    System.err.println("[ProductoDAO] No se puede eliminar: producto tiene " + rs.getInt(1)
+                            + " ventas asociadas.");
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[ProductoDAO] Error verificando dependencias: " + e.getMessage());
+            return false;
+        }
+
+        String sql = "DELETE FROM productos WHERE id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[ProductoDAO] Error en delete: " + e.getMessage());
+        }
+        return false;
+    }
+
     private void setNullableDouble(PreparedStatement ps, int index, Double value) throws SQLException {
         if (value != null) {
             ps.setDouble(index, value);

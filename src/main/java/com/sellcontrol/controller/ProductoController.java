@@ -141,6 +141,31 @@ public class ProductoController {
     }
 
     @FXML
+    private void handleEliminar() {
+        Producto selected = tablaProductos.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            mostrarMensaje("Seleccione un producto para eliminar.", true);
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Eliminar Producto");
+        confirm.setHeaderText("¿Eliminar permanentemente \"" + selected.getNombre() + "\"?");
+        confirm.setContentText(
+                "Esta acción no se puede deshacer. Si el producto tiene ventas asociadas, no se podrá eliminar.");
+        Optional<ButtonType> ans = confirm.showAndWait();
+        if (ans.isPresent() && ans.get() == ButtonType.OK) {
+            String error = productoService.eliminar(selected.getId());
+            if (error == null) {
+                mostrarMensaje("Producto \"" + selected.getNombre() + "\" eliminado.", false);
+                cargarDatos();
+            } else {
+                mostrarMensaje(error, true);
+            }
+        }
+    }
+
+    @FXML
     private void handleVolver() {
         App.changeScene("dashboard.fxml", "Panel Principal", 900, 600);
     }

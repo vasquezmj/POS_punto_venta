@@ -2,13 +2,16 @@ package com.sellcontrol.controller;
 
 import com.sellcontrol.App;
 import com.sellcontrol.model.Venta;
+import com.sellcontrol.service.ExcelExportService;
 import com.sellcontrol.service.ReporteService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -62,6 +65,7 @@ public class ReporteController {
     private Label lblMensaje;
 
     private final ReporteService reporteService = new ReporteService();
+    private final ExcelExportService excelExportService = new ExcelExportService();
 
     @FXML
     public void initialize() {
@@ -148,6 +152,35 @@ public class ReporteController {
             System.err.println("[Reportes] Error: " + e.getMessage());
             e.printStackTrace();
             lblMensaje.setText("Error al generar reporte: " + e.getMessage());
+            lblMensaje.setStyle("-fx-text-fill: #e74c3c;");
+        }
+    }
+
+    @FXML
+    private void handleExportarExcel() {
+        LocalDate desde = dpDesde.getValue();
+        LocalDate hasta = dpHasta.getValue();
+        if (desde == null || hasta == null) {
+            lblMensaje.setText("Seleccione rango de fechas antes de exportar.");
+            lblMensaje.setStyle("-fx-text-fill: #e74c3c;");
+            return;
+        }
+
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Guardar Reporte Excel");
+        fc.setInitialFileName("Reporte_" + desde + "_a_" + hasta + ".xlsx");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel (*.xlsx)", "*.xlsx"));
+
+        File destino = fc.showSaveDialog(App.getPrimaryStage());
+        if (destino == null)
+            return; // cancelado
+
+        String error = excelExportService.exportar(desde.toString(), hasta.toString(), destino);
+        if (error == null) {
+            lblMensaje.setText("✅ Reporte exportado: " + destino.getName());
+            lblMensaje.setStyle("-fx-text-fill: #27ae60;");
+        } else {
+            lblMensaje.setText(error);
             lblMensaje.setStyle("-fx-text-fill: #e74c3c;");
         }
     }

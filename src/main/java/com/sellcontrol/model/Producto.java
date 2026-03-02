@@ -111,6 +111,6 @@ public class Producto {
 
     @Override
     public String toString() {
-        return nombre + " (" + tipo + ") - " + getUnidadVenta() + ": $" + String.format("%.2f", getPrecioActivo());
+        return nombre + " (" + tipo + ") - " + getUnidadVenta() + ": ₡" + String.format("%.2f", getPrecioActivo());
     }
 }

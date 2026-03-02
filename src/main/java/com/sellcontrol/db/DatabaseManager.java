@@ -19,7 +19,8 @@ public class DatabaseManager {
     private static DatabaseManager instance;
     private Connection connection;
 
-    private DatabaseManager() {}
+    private DatabaseManager() {
+    }
 
     public static synchronized DatabaseManager getInstance() {
         if (instance == null) {
@@ -62,106 +63,106 @@ public class DatabaseManager {
      */
     private void createTables(Connection conn) throws SQLException {
         String[] sqls = {
-            // Usuarios
-            """
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                nombre      TEXT NOT NULL,
-                usuario     TEXT NOT NULL UNIQUE,
-                contrasena  TEXT NOT NULL,
-                rol         TEXT NOT NULL CHECK(rol IN ('ADMIN','CAJERO')),
-                activo      INTEGER NOT NULL DEFAULT 1,
-                creado_en   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
-            )
-            """,
+                // Usuarios
+                """
+                        CREATE TABLE IF NOT EXISTS usuarios (
+                            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                            nombre      TEXT NOT NULL,
+                            usuario     TEXT NOT NULL UNIQUE,
+                            contrasena  TEXT NOT NULL,
+                            rol         TEXT NOT NULL CHECK(rol IN ('ADMIN','CAJERO')),
+                            activo      INTEGER NOT NULL DEFAULT 1,
+                            creado_en   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+                        )
+                        """,
 
-            // Productos
-            """
-            CREATE TABLE IF NOT EXISTS productos (
-                id                INTEGER PRIMARY KEY AUTOINCREMENT,
-                nombre            TEXT NOT NULL,
-                tipo              TEXT NOT NULL CHECK(tipo IN ('FRUTA','VERDURA','OTRO')),
-                precio_por_kg     REAL,
-                precio_por_unidad REAL,
-                activo            INTEGER NOT NULL DEFAULT 1,
-                creado_en         TEXT NOT NULL DEFAULT (datetime('now','localtime'))
-            )
-            """,
+                // Productos
+                """
+                        CREATE TABLE IF NOT EXISTS productos (
+                            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+                            nombre            TEXT NOT NULL,
+                            tipo              TEXT NOT NULL CHECK(tipo IN ('FRUTA','VERDURA','OTRO')),
+                            precio_por_kg     REAL,
+                            precio_por_unidad REAL,
+                            activo            INTEGER NOT NULL DEFAULT 1,
+                            creado_en         TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+                        )
+                        """,
 
-            // Ventas
-            """
-            CREATE TABLE IF NOT EXISTS ventas (
-                id             INTEGER PRIMARY KEY AUTOINCREMENT,
-                fecha_hora     TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-                usuario_id     INTEGER NOT NULL,
-                total          REAL NOT NULL DEFAULT 0,
-                metodo_pago    TEXT NOT NULL CHECK(metodo_pago IN ('EFECTIVO','TARJETA','SINPE')),
-                estado         TEXT NOT NULL DEFAULT 'COBRADA' CHECK(estado IN ('COBRADA','PENDIENTE')),
-                cliente_nombre TEXT,
-                FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-            )
-            """,
+                // Ventas
+                """
+                        CREATE TABLE IF NOT EXISTS ventas (
+                            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                            fecha_hora     TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                            usuario_id     INTEGER NOT NULL,
+                            total          REAL NOT NULL DEFAULT 0,
+                            metodo_pago    TEXT NOT NULL CHECK(metodo_pago IN ('EFECTIVO','TARJETA','SINPE')),
+                            estado         TEXT NOT NULL DEFAULT 'COBRADA' CHECK(estado IN ('COBRADA','PENDIENTE')),
+                            cliente_nombre TEXT,
+                            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+                        )
+                        """,
 
-            // Detalle de Venta
-            """
-            CREATE TABLE IF NOT EXISTS detalle_venta (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                venta_id    INTEGER NOT NULL,
-                producto_id INTEGER NOT NULL,
-                cantidad    REAL NOT NULL,
-                tipo_unidad TEXT NOT NULL CHECK(tipo_unidad IN ('KG','UNIDAD')),
-                subtotal    REAL NOT NULL,
-                FOREIGN KEY (venta_id) REFERENCES ventas(id),
-                FOREIGN KEY (producto_id) REFERENCES productos(id)
-            )
-            """,
+                // Detalle de Venta
+                """
+                        CREATE TABLE IF NOT EXISTS detalle_venta (
+                            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                            venta_id    INTEGER NOT NULL,
+                            producto_id INTEGER NOT NULL,
+                            cantidad    REAL NOT NULL,
+                            tipo_unidad TEXT NOT NULL CHECK(tipo_unidad IN ('KG','UNIDAD')),
+                            subtotal    REAL NOT NULL,
+                            FOREIGN KEY (venta_id) REFERENCES ventas(id),
+                            FOREIGN KEY (producto_id) REFERENCES productos(id)
+                        )
+                        """,
 
-            // Movimientos de Caja
-            """
-            CREATE TABLE IF NOT EXISTS movimientos_caja (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                tipo        TEXT NOT NULL CHECK(tipo IN ('INGRESO','CAMBIO')),
-                monto       REAL NOT NULL,
-                motivo      TEXT NOT NULL,
-                usuario_id  INTEGER NOT NULL,
-                fecha_hora  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-                FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-            )
-            """,
+                // Movimientos de Caja
+                """
+                        CREATE TABLE IF NOT EXISTS movimientos_caja (
+                            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                            tipo        TEXT NOT NULL CHECK(tipo IN ('INGRESO','CAMBIO','RETIRO')),
+                            monto       REAL NOT NULL,
+                            motivo      TEXT NOT NULL,
+                            usuario_id  INTEGER NOT NULL,
+                            fecha_hora  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+                        )
+                        """,
 
-            // Gastos
-            """
-            CREATE TABLE IF NOT EXISTS gastos (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                tipo        TEXT NOT NULL CHECK(tipo IN ('ABASTECIMIENTO','EMPLEADOS')),
-                monto       REAL NOT NULL,
-                fecha_hora  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-                descripcion TEXT
-            )
-            """,
+                // Gastos
+                """
+                        CREATE TABLE IF NOT EXISTS gastos (
+                            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                            tipo        TEXT NOT NULL CHECK(tipo IN ('ABASTECIMIENTO','EMPLEADOS')),
+                            monto       REAL NOT NULL,
+                            fecha_hora  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                            descripcion TEXT
+                        )
+                        """,
 
-            // Merma
-            """
-            CREATE TABLE IF NOT EXISTS mermas (
-                id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                descripcion      TEXT NOT NULL,
-                monto_aproximado REAL NOT NULL,
-                fecha_hora       TEXT NOT NULL DEFAULT (datetime('now','localtime'))
-            )
-            """,
+                // Merma
+                """
+                        CREATE TABLE IF NOT EXISTS mermas (
+                            id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                            descripcion      TEXT NOT NULL,
+                            monto_aproximado REAL NOT NULL,
+                            fecha_hora       TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+                        )
+                        """,
 
-            // Auditoría
-            """
-            CREATE TABLE IF NOT EXISTS audit_log (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                usuario_id  INTEGER NOT NULL,
-                accion      TEXT NOT NULL,
-                entidad     TEXT NOT NULL,
-                entidad_id  INTEGER,
-                fecha_hora  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-                FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-            )
-            """
+                // Auditoría
+                """
+                        CREATE TABLE IF NOT EXISTS audit_log (
+                            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                            usuario_id  INTEGER NOT NULL,
+                            accion      TEXT NOT NULL,
+                            entidad     TEXT NOT NULL,
+                            entidad_id  INTEGER,
+                            fecha_hora  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+                        )
+                        """
         };
 
         try (Statement stmt = conn.createStatement()) {
@@ -179,7 +180,7 @@ public class DatabaseManager {
     private void seedAdmin(Connection conn) throws SQLException {
         String checkSql = "SELECT COUNT(*) FROM usuarios WHERE usuario = 'admin'";
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(checkSql)) {
+                ResultSet rs = stmt.executeQuery(checkSql)) {
             if (rs.next() && rs.getInt(1) == 0) {
                 String hashedPassword = BCrypt.hashpw("admin123", BCrypt.gensalt());
                 String insertSql = "INSERT INTO usuarios (nombre, usuario, contrasena, rol, activo) VALUES (?, ?, ?, ?, ?)";

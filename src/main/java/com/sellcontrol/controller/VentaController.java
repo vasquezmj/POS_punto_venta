@@ -5,6 +5,7 @@ import com.sellcontrol.model.DetalleVenta;
 import com.sellcontrol.model.Producto;
 import com.sellcontrol.model.Venta;
 import com.sellcontrol.service.ProductoService;
+import com.sellcontrol.service.TicketPrintService;
 import com.sellcontrol.service.VentaService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -25,6 +26,8 @@ public class VentaController {
 
     // --- Pestaña Nueva Venta ---
     @FXML
+    private TextField txtBuscarProducto;
+    @FXML
     private ComboBox<Producto> cmbProducto;
     @FXML
     private TextField txtCantidad;
@@ -44,6 +47,8 @@ public class VentaController {
     private TableColumn<DetalleVenta, String> colDetSubtotal;
     @FXML
     private Label lblTotal;
+    @FXML
+    private Label lblTotalTabla;
     @FXML
     private ComboBox<String> cmbMetodoPago;
     @FXML
@@ -90,6 +95,7 @@ public class VentaController {
 
     private final ProductoService productoService = new ProductoService();
     private final VentaService ventaService = new VentaService();
+    private final TicketPrintService ticketPrintService = new TicketPrintService();
     private final ObservableList<DetalleVenta> detallesCarrito = FXCollections.observableArrayList();
     private double totalVenta = 0;
 
@@ -98,6 +104,10 @@ public class VentaController {
         // Cargar productos activos en combo
         List<Producto> productosActivos = productoService.listarActivos();
         cmbProducto.setItems(FXCollections.observableArrayList(productosActivos));
+
+        // Listener para búsqueda por ID o Nombre
+        txtBuscarProducto.textProperty()
+                .addListener((obs, oldVal, newVal) -> filtrarProductos(newVal, productosActivos));
 
         // Métodos de pago
         cmbMetodoPago.setItems(FXCollections.observableArrayList("EFECTIVO", "TARJETA", "SINPE"));
@@ -153,8 +163,30 @@ public class VentaController {
         txtCantidad.textProperty().addListener((obs, oldVal, newVal) -> calcularSubtotalPreview());
 
         lblTotal.setText("₡0.00");
+        if (lblTotalTabla != null)
+            lblTotalTabla.setText("₡0.00");
         cargarVentasHoy();
         cargarFiados();
+    }
+
+    private void filtrarProductos(String filtro, List<Producto> todos) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            cmbProducto.setItems(FXCollections.observableArrayList(todos));
+            return;
+        }
+        String f = filtro.toLowerCase().trim();
+        List<Producto> filtrados = todos.stream()
+                .filter(p -> String.valueOf(p.getId()).equals(f) || p.getNombre().toLowerCase().contains(f))
+                .toList();
+
+        cmbProducto.setItems(FXCollections.observableArrayList(filtrados));
+        if (filtrados.size() == 1) {
+            cmbProducto.setValue(filtrados.get(0));
+            // Opcional: enfocar en cantidad si encuentra un solo producto
+            txtCantidad.requestFocus();
+        } else if (!filtrados.isEmpty()) {
+            cmbProducto.show();
+        }
     }
 
     private void actualizarPrecioUnitario() {
@@ -220,8 +252,11 @@ public class VentaController {
         detallesCarrito.add(dv);
         totalVenta += subtotal;
         lblTotal.setText(String.format("₡%.2f", totalVenta));
+        if (lblTotalTabla != null)
+            lblTotalTabla.setText(String.format("₡%.2f", totalVenta));
 
         // Limpiar inputs
+        txtBuscarProducto.clear();
         txtCantidad.clear();
         lblSubtotal.setText("₡0.00");
         mostrarMensaje(p.getNombre() + " agregado.", false);
@@ -239,6 +274,8 @@ public class VentaController {
         if (totalVenta < 0)
             totalVenta = 0;
         lblTotal.setText(String.format("₡%.2f", totalVenta));
+        if (lblTotalTabla != null)
+            lblTotalTabla.setText(String.format("₡%.2f", totalVenta));
         mostrarMensaje("Producto removido.", false);
     }
 
@@ -262,6 +299,8 @@ public class VentaController {
             detallesCarrito.clear();
             totalVenta = 0;
             lblTotal.setText("₡0.00");
+            if (lblTotalTabla != null)
+                lblTotalTabla.setText("₡0.00");
             chkFiado.setSelected(false);
             txtClienteNombre.clear();
             cargarVentasHoy();
@@ -276,6 +315,8 @@ public class VentaController {
         detallesCarrito.clear();
         totalVenta = 0;
         lblTotal.setText("₡0.00");
+        if (lblTotalTabla != null)
+            lblTotalTabla.setText("₡0.00");
         mostrarMensaje("Carrito limpiado.", false);
     }
 
@@ -336,6 +377,25 @@ public class VentaController {
         ta.setPrefRowCount(12);
         info.getDialogPane().setContent(ta);
         info.showAndWait();
+    }
+
+    @FXML
+    private void handleImprimirTicket() {
+        Venta selected = tablaVentasHoy.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            mostrarMensaje("Seleccione una venta para imprimir.", true);
+            return;
+        }
+
+        List<DetalleVenta> detalles = ventaService.obtenerDetalles(selected.getId());
+        String cajero = selected.getNombreUsuario() != null ? selected.getNombreUsuario() : "—";
+
+        String error = ticketPrintService.imprimir(selected, detalles, cajero);
+        if (error == null) {
+            mostrarMensaje("✅ Ticket de venta #" + selected.getId() + " enviado a imprimir.", false);
+        } else {
+            mostrarMensaje(error, true);
+        }
     }
 
     private void cargarVentasHoy() {

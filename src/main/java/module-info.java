@@ -3,6 +3,9 @@ module com.sellcontrol {
     requires javafx.fxml;
     requires java.sql;
     requires jbcrypt;
+    requires java.desktop;
+    requires org.apache.poi.poi;
+    requires org.apache.poi.ooxml;
 
     opens com.sellcontrol to javafx.fxml;
     opens com.sellcontrol.controller to javafx.fxml;

@@ -159,6 +159,24 @@ public class ProductoService {
         return "Error al cambiar estado del producto.";
     }
 
+    /**
+     * Elimina un producto permanentemente.
+     * Solo funciona si el producto no tiene ventas asociadas.
+     *
+     * @return mensaje de error o null si fue exitoso.
+     */
+    public String eliminar(int id) {
+        Producto p = productoDAO.findById(id);
+        if (p == null)
+            return "Producto no encontrado.";
+
+        if (productoDAO.delete(id)) {
+            registrarAuditoria("ELIMINAR_PRODUCTO", id);
+            return null;
+        }
+        return "No se puede eliminar: el producto tiene ventas asociadas. Use Desactivar en su lugar.";
+    }
+
     private void registrarAuditoria(String accion, int entidadId) {
         Usuario current = AuthService.getCurrentUser();
         if (current != null) {
