@@ -57,6 +57,8 @@ public class VentaController {
     private TextField txtClienteNombre;
     @FXML
     private Label lblClienteLabel;
+    @FXML
+    private CheckBox chkImprimirTicket;
 
     // --- Pestaña Ventas del Día ---
     @FXML
@@ -176,7 +178,7 @@ public class VentaController {
         }
         String f = filtro.toLowerCase().trim();
         List<Producto> filtrados = todos.stream()
-                .filter(p -> String.valueOf(p.getId()).equals(f) || p.getNombre().toLowerCase().contains(f))
+                .filter(p -> String.valueOf(p.getId()).startsWith(f) || p.getNombre().toLowerCase().contains(f))
                 .toList();
 
         cmbProducto.setItems(FXCollections.observableArrayList(filtrados));
@@ -233,6 +235,11 @@ public class VentaController {
             cantidad = Double.parseDouble(cantStr.replace(",", "."));
             if (cantidad <= 0) {
                 mostrarMensaje("La cantidad debe ser mayor a 0.", true);
+                return;
+            }
+            // Productos por unidad solo aceptan cantidades enteras
+            if (!p.isVentaPorKg() && cantidad != Math.floor(cantidad)) {
+                mostrarMensaje("Este producto se vende por unidad. Ingrese un número entero.", true);
                 return;
             }
         } catch (NumberFormatException e) {
@@ -295,6 +302,20 @@ public class VentaController {
 
         if (ventaId > 0) {
             mostrarMensaje("✅ Venta #" + ventaId + " registrada. Total: ₡" + String.format("%.2f", totalVenta), false);
+
+            // Imprimir ticket automáticamente si el checkbox está marcado
+            if (chkImprimirTicket != null && chkImprimirTicket.isSelected()) {
+                Venta ventaCompleta = ventaService.buscarPorId(ventaId);
+                if (ventaCompleta != null) {
+                    List<DetalleVenta> detallesImprimir = ventaService.obtenerDetalles(ventaId);
+                    String cajero = ventaCompleta.getNombreUsuario() != null ? ventaCompleta.getNombreUsuario() : "—";
+                    String errorTicket = ticketPrintService.imprimir(ventaCompleta, detallesImprimir, cajero);
+                    if (errorTicket != null) {
+                        mostrarMensaje("Venta registrada, pero error al imprimir: " + errorTicket, true);
+                    }
+                }
+            }
+
             // Limpiar carrito
             detallesCarrito.clear();
             totalVenta = 0;

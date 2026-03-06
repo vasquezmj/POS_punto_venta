@@ -164,6 +164,62 @@ public class UsuarioController {
     }
 
     /**
+     * Elimina el usuario seleccionado tras confirmación.
+     * Si tiene registros asociados, muestra los detalles y ofrece forzar
+     * eliminación.
+     */
+    @FXML
+    private void handleEliminar() {
+        Usuario selected = tablaUsuarios.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            mostrarMensaje("Seleccione un usuario para eliminar.", true);
+            return;
+        }
+
+        // Primera confirmación
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmar Eliminación");
+        confirm.setHeaderText("¿Está seguro de eliminar al usuario \"" + selected.getNombre() + "\"?");
+        confirm.setContentText("Esta acción no se puede deshacer.");
+        Optional<ButtonType> ans = confirm.showAndWait();
+        if (!ans.isPresent() || ans.get() != ButtonType.OK)
+            return;
+
+        // Intentar eliminar (sin forzar)
+        String error = usuarioService.eliminar(selected.getId(), false);
+
+        if (error == null) {
+            mostrarMensaje("Usuario eliminado exitosamente.", false);
+            cargarDatos();
+        } else if ("TIENE_REGISTROS".equals(error)) {
+            // Mostrar detalles y ofrecer forzar
+            String detalles = usuarioService.contarRegistros(selected.getId());
+            Alert alertForce = new Alert(Alert.AlertType.WARNING);
+            alertForce.setTitle("Usuario con registros asociados");
+            alertForce.setHeaderText("El usuario \"" + selected.getNombre() + "\" tiene los siguientes registros:");
+            alertForce.setContentText(
+                    detalles + "\n¿Desea eliminar al usuario Y TODOS sus registros?\nEsta acción es IRREVERSIBLE.");
+
+            ButtonType btnEliminarTodo = new ButtonType("Eliminar Todo", ButtonBar.ButtonData.OK_DONE);
+            ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alertForce.getButtonTypes().setAll(btnEliminarTodo, btnCancelar);
+
+            Optional<ButtonType> resp = alertForce.showAndWait();
+            if (resp.isPresent() && resp.get() == btnEliminarTodo) {
+                String errorForce = usuarioService.eliminar(selected.getId(), true);
+                if (errorForce == null) {
+                    mostrarMensaje("Usuario y todos sus registros eliminados exitosamente.", false);
+                    cargarDatos();
+                } else {
+                    mostrarMensaje(errorForce, true);
+                }
+            }
+        } else {
+            mostrarMensaje(error, true);
+        }
+    }
+
+    /**
      * Regresa al Dashboard.
      */
     @FXML

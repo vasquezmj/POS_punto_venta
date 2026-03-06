@@ -102,7 +102,7 @@ public class TicketPrintService {
         out.write(ESC_CENTER);
         out.write(ESC_DOUBLE_HEIGHT);
         out.write(ESC_BOLD_ON);
-        escribirLinea(out, "VERDULERIA");
+        escribirLinea(out, "VERDULERIA VL");
         out.write(ESC_NORMAL_SIZE);
         out.write(ESC_BOLD_OFF);
         escribirLinea(out, "SellControl POS");
@@ -110,7 +110,7 @@ public class TicketPrintService {
         out.write(ESC_LEFT);
 
         // === Datos de la venta ===
-        escribirLinea(out, "Venta #: " + venta.getId());
+        // escribirLinea(out, "Venta #: " + venta.getId());
         escribirLinea(out, "Fecha  : " + venta.getFechaHora());
         escribirLinea(out, "Cajero : " + truncar(cajero, 22));
         escribirLinea(out, "Pago   : " + venta.getMetodoPago());

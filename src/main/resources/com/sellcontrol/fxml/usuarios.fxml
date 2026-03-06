@@ -54,6 +54,7 @@
             <Button text="✏️ Editar" onAction="#handleEditar" styleClass="btn-secondary"/>
             <Button text="🔑 Cambiar Contraseña" onAction="#handleCambiarPassword" styleClass="btn-secondary"/>
             <Button text="🔄 Activar/Desactivar" onAction="#handleToggleActivo" styleClass="btn-warning"/>
+            <Button text="🗑️ Eliminar" onAction="#handleEliminar" styleClass="btn-danger"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="lblMensaje" text="" styleClass="status-label"/>
         </HBox>

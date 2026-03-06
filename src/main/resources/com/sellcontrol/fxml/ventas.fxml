@@ -74,11 +74,13 @@
 
                         <Separator/>
 
+                        <CheckBox fx:id="chkImprimirTicket" text="Imprimir ticket" selected="true"/>
+
                         <Label fx:id="lblTotal" text="₡0.00" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
 
                         <HBox spacing="8">
                             <Button text="✅ Registrar Venta" onAction="#handleRegistrarVenta" styleClass="btn-primary" prefWidth="160"/>
-                            <Button text="🗑️ Limpiar" onAction="#handleLimpiarCarrito" styleClass="btn-warning"/>
+                            <Button text="Limpiar" onAction="#handleLimpiarCarrito" styleClass="btn-warning"/>
                         </HBox>
                     </VBox>
 

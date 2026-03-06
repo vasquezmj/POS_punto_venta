@@ -46,7 +46,7 @@
                 <Button fx:id="btnUsuarios" text="👥  Usuarios" onAction="#handleUsuarios"
                         styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
 
-                <Button fx:id="btnProductos" text="🥬  Productos" onAction="#handleProductos"
+                <Button fx:id="btnProductos" text="📦  Productos" onAction="#handleProductos"
                         styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
 
                 <Button fx:id="btnVentas" text="🛒  Ventas" onAction="#handleVentas"

@@ -66,6 +66,13 @@ public class VentaService {
     }
 
     /**
+     * Busca una venta por su ID.
+     */
+    public Venta buscarPorId(int ventaId) {
+        return ventaDAO.findById(ventaId);
+    }
+
+    /**
      * Cobra una venta pendiente (fiada).
      */
     public String cobrarVenta(int ventaId) {

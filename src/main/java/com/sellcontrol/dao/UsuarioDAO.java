@@ -20,7 +20,7 @@ public class UsuarioDAO {
     public Usuario findByUsuario(String usuario) {
         String sql = "SELECT * FROM usuarios WHERE usuario = ? AND activo = 1";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, usuario);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -39,7 +39,7 @@ public class UsuarioDAO {
     public Usuario findById(int id) {
         String sql = "SELECT * FROM usuarios WHERE id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -59,8 +59,8 @@ public class UsuarioDAO {
         List<Usuario> usuarios = new ArrayList<>();
         String sql = "SELECT * FROM usuarios ORDER BY id";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 usuarios.add(mapRow(rs));
             }
@@ -72,12 +72,13 @@ public class UsuarioDAO {
 
     /**
      * Inserta un nuevo usuario.
+     * 
      * @return el ID generado, o -1 si falla.
      */
     public int insert(Usuario u) {
         String sql = "INSERT INTO usuarios (nombre, usuario, contrasena, rol, activo) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, u.getNombre());
             ps.setString(2, u.getUsuario());
             ps.setString(3, u.getContrasena());
@@ -102,7 +103,7 @@ public class UsuarioDAO {
     public boolean update(Usuario u) {
         String sql = "UPDATE usuarios SET nombre = ?, usuario = ?, rol = ?, activo = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, u.getNombre());
             ps.setString(2, u.getUsuario());
             ps.setString(3, u.getRol());
@@ -121,7 +122,7 @@ public class UsuarioDAO {
     public boolean updatePassword(int id, String hashedPassword) {
         String sql = "UPDATE usuarios SET contrasena = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, hashedPassword);
             ps.setInt(2, id);
             return ps.executeUpdate() > 0;
@@ -132,18 +133,117 @@ public class UsuarioDAO {
     }
 
     /**
+     * Cuenta cuántos usuarios activos con rol ADMIN existen.
+     */
+    public int countAdminsActivos() {
+        String sql = "SELECT COUNT(*) FROM usuarios WHERE rol = 'ADMIN' AND activo = 1";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("[UsuarioDAO] Error en countAdminsActivos: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
      * Verifica si ya existe un nombre de usuario (para evitar duplicados).
      */
     public boolean existsByUsuario(String usuario) {
         String sql = "SELECT COUNT(*) FROM usuarios WHERE usuario = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, usuario);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
             System.err.println("[UsuarioDAO] Error en existsByUsuario: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Elimina un usuario por ID.
+     * 
+     * @return true si se eliminó correctamente.
+     */
+    public boolean delete(int id) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[UsuarioDAO] Error en delete: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Cuenta los registros asociados a un usuario en cada tabla.
+     * 
+     * @return int[3] con conteos de [ventas, movimientos_caja, audit_log], o null
+     *         si hay error.
+     */
+    public int[] contarRegistrosAsociados(int id) {
+        String[] tablas = { "ventas", "movimientos_caja", "audit_log" };
+        int[] conteos = new int[3];
+        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
+            for (int i = 0; i < tablas.length; i++) {
+                String sql = "SELECT COUNT(*) FROM " + tablas[i] + " WHERE usuario_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, id);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            conteos[i] = rs.getInt(1);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[UsuarioDAO] Error en contarRegistrosAsociados: " + e.getMessage());
+            return null;
+        }
+        return conteos;
+    }
+
+    /**
+     * Elimina un usuario junto con todos sus registros asociados (cascade).
+     * Primero elimina detalles de venta, luego ventas, movimientos, audit_log y
+     * finalmente el usuario.
+     * Todo dentro de una transacción.
+     * 
+     * @return true si se eliminó correctamente.
+     */
+    public boolean deleteConRegistros(int id) {
+        String[] sqlStatements = {
+                "DELETE FROM detalle_venta WHERE venta_id IN (SELECT id FROM ventas WHERE usuario_id = ?)",
+                "DELETE FROM ventas WHERE usuario_id = ?",
+                "DELETE FROM movimientos_caja WHERE usuario_id = ?",
+                "DELETE FROM audit_log WHERE usuario_id = ?",
+                "DELETE FROM usuarios WHERE id = ?"
+        };
+        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                for (String sql : sqlStatements) {
+                    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                        ps.setInt(1, id);
+                        ps.executeUpdate();
+                    }
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("[UsuarioDAO] Error en deleteConRegistros, rollback: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            System.err.println("[UsuarioDAO] Error de conexión en deleteConRegistros: " + e.getMessage());
         }
         return false;
     }
