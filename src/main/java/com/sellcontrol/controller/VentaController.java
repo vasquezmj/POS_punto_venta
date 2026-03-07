@@ -13,6 +13,11 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -297,6 +302,79 @@ public class VentaController {
         String estado = chkFiado.isSelected() ? "PENDIENTE" : "COBRADA";
         String clienteNombre = chkFiado.isSelected() ? txtClienteNombre.getText() : null;
 
+        // --- Pago en efectivo: pedir monto y calcular cambio ---
+        double montoPagado = 0;
+        double cambio = 0;
+
+        if ("EFECTIVO".equals(metodoPago) && !chkFiado.isSelected()) {
+            TextInputDialog dlgPago = new TextInputDialog();
+            dlgPago.setTitle("Pago en Efectivo");
+            dlgPago.setHeaderText(String.format("Total a cobrar: ₡%.2f", totalVenta));
+            dlgPago.setContentText("¿Con cuánto paga el cliente? ₡");
+
+            Optional<String> resultado = dlgPago.showAndWait();
+            if (resultado.isEmpty() || resultado.get().isBlank()) {
+                mostrarMensaje("Venta cancelada (no se ingresó monto de pago).", true);
+                return;
+            }
+
+            try {
+                montoPagado = Double.parseDouble(resultado.get().replace(",", "."));
+            } catch (NumberFormatException e) {
+                mostrarMensaje("El monto ingresado no es válido.", true);
+                return;
+            }
+
+            if (montoPagado < totalVenta) {
+                mostrarMensaje(String.format("El monto (₡%.2f) es menor al total (₡%.2f).", montoPagado, totalVenta),
+                        true);
+                return;
+            }
+
+            cambio = montoPagado - totalVenta;
+
+            // Mostrar cambio al cajero con diálogo personalizado
+            Dialog<Void> dlgCambio = new Dialog<>();
+            dlgCambio.setTitle("💰 Cambio");
+            dlgCambio.setHeaderText(null);
+
+            VBox contenido = new VBox(12);
+            contenido.setAlignment(Pos.CENTER);
+            contenido.setPadding(new Insets(20, 30, 20, 30));
+            contenido.setStyle("-fx-background-color: #f8f9fa; -fx-background-radius: 8;");
+
+            Label lblTituloCambio = new Label("✅ Venta registrada");
+            lblTituloCambio.setFont(Font.font("System", FontWeight.BOLD, 16));
+            lblTituloCambio.setStyle("-fx-text-fill: #2c3e50;");
+
+            Label lblTotalDlg = new Label(String.format("Total: ₡%.2f", totalVenta));
+            lblTotalDlg.setFont(Font.font("System", FontWeight.NORMAL, 18));
+            lblTotalDlg.setStyle("-fx-text-fill: #555;");
+
+            Label lblPagoCon = new Label(String.format("Pagó con: ₡%.2f", montoPagado));
+            lblPagoCon.setFont(Font.font("System", FontWeight.NORMAL, 18));
+            lblPagoCon.setStyle("-fx-text-fill: #555;");
+
+            Separator sep = new Separator();
+
+            Label lblCambioTitulo = new Label("CAMBIO A DEVOLVER");
+            lblCambioTitulo.setFont(Font.font("System", FontWeight.BOLD, 14));
+            lblCambioTitulo.setStyle("-fx-text-fill: #7f8c8d;");
+
+            Label lblCambioValor = new Label(String.format("₡%.2f", cambio));
+            lblCambioValor.setFont(Font.font("System", FontWeight.BOLD, 36));
+            lblCambioValor.setStyle("-fx-text-fill: #27ae60;");
+
+            contenido.getChildren().addAll(lblTituloCambio, lblTotalDlg, lblPagoCon, sep, lblCambioTitulo,
+                    lblCambioValor);
+
+            dlgCambio.getDialogPane().setContent(contenido);
+            dlgCambio.getDialogPane().getButtonTypes().add(ButtonType.OK);
+            dlgCambio.getDialogPane().setMinWidth(420);
+            dlgCambio.getDialogPane().setMinHeight(300);
+            dlgCambio.showAndWait();
+        }
+
         List<DetalleVenta> detalles = new ArrayList<>(detallesCarrito);
         int ventaId = ventaService.registrarVenta(metodoPago, estado, clienteNombre, detalles);
 
@@ -309,7 +387,8 @@ public class VentaController {
                 if (ventaCompleta != null) {
                     List<DetalleVenta> detallesImprimir = ventaService.obtenerDetalles(ventaId);
                     String cajero = ventaCompleta.getNombreUsuario() != null ? ventaCompleta.getNombreUsuario() : "—";
-                    String errorTicket = ticketPrintService.imprimir(ventaCompleta, detallesImprimir, cajero);
+                    String errorTicket = ticketPrintService.imprimir(ventaCompleta, detallesImprimir, cajero,
+                            montoPagado, cambio);
                     if (errorTicket != null) {
                         mostrarMensaje("Venta registrada, pero error al imprimir: " + errorTicket, true);
                     }

@@ -35,14 +35,23 @@ public class TicketPrintService {
     private static final byte LF = 0x0A; // Salto de línea
 
     /**
-     * Imprime un ticket para la venta indicada.
-     *
-     * @param venta    la venta a imprimir
-     * @param detalles los detalles (líneas) de la venta
-     * @param cajero   nombre del cajero
-     * @return null si OK, o mensaje de error
+     * Imprime un ticket para la venta indicada (sin datos de pago en efectivo).
      */
     public String imprimir(Venta venta, List<DetalleVenta> detalles, String cajero) {
+        return imprimir(venta, detalles, cajero, 0, 0);
+    }
+
+    /**
+     * Imprime un ticket para la venta indicada, incluyendo monto pagado y cambio.
+     *
+     * @param venta       la venta a imprimir
+     * @param detalles    los detalles (líneas) de la venta
+     * @param cajero      nombre del cajero
+     * @param montoPagado monto entregado por el cliente (0 = no mostrar)
+     * @param cambio      cambio a devolver al cliente
+     * @return null si OK, o mensaje de error
+     */
+    public String imprimir(Venta venta, List<DetalleVenta> detalles, String cajero, double montoPagado, double cambio) {
         try {
             // Buscar impresora por nombre
             PrintService printService = buscarImpresora();
@@ -51,7 +60,7 @@ public class TicketPrintService {
             }
 
             // Generar bytes ESC/POS
-            byte[] ticketData = generarTicketESCPOS(venta, detalles, cajero);
+            byte[] ticketData = generarTicketESCPOS(venta, detalles, cajero, montoPagado, cambio);
 
             // Enviar a la impresora
             DocPrintJob job = printService.createPrintJob();
@@ -90,9 +99,11 @@ public class TicketPrintService {
     }
 
     /**
-     * Genera el ticket completo como array de bytes ESC/POS.
+     * Genera el ticket completo como array de bytes ESC/POS, con monto pagado y
+     * cambio.
      */
-    private byte[] generarTicketESCPOS(Venta venta, List<DetalleVenta> detalles, String cajero) throws IOException {
+    private byte[] generarTicketESCPOS(Venta venta, List<DetalleVenta> detalles, String cajero, double montoPagado,
+            double cambio) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         // Inicializar
@@ -157,6 +168,18 @@ public class TicketPrintService {
         out.write(ESC_NORMAL_SIZE);
         out.write(ESC_BOLD_OFF);
         escribirLinea(out, repetir('=', LINE_WIDTH));
+
+        // === Pago en efectivo (si aplica) ===
+        if (montoPagado > 0) {
+            out.write(ESC_LEFT);
+            String pagoStr = String.format("Efectivo: %c%.0f", (char) 0xA2, montoPagado);
+            String cambioStr = String.format("Cambio  : %c%.0f", (char) 0xA2, cambio);
+            escribirLinea(out, pagoStr);
+            out.write(ESC_BOLD_ON);
+            escribirLinea(out, cambioStr);
+            out.write(ESC_BOLD_OFF);
+            escribirLinea(out, repetir('-', LINE_WIDTH));
+        }
 
         // === Pie ===
         out.write(ESC_CENTER);
