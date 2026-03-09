@@ -94,13 +94,14 @@ public class VentaDAO {
     }
 
     /**
-     * Marca una venta pendiente como cobrada.
+     * Marca una venta pendiente como cobrada y actualiza el método de pago.
      */
-    public boolean cobrar(int ventaId) {
-        String sql = "UPDATE ventas SET estado = 'COBRADA' WHERE id = ? AND estado = 'PENDIENTE'";
+    public boolean cobrar(int ventaId, String metodoPago) {
+        String sql = "UPDATE ventas SET estado = 'COBRADA', metodo_pago = ? WHERE id = ? AND estado = 'PENDIENTE'";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, ventaId);
+            ps.setString(1, metodoPago);
+            ps.setInt(2, ventaId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("[VentaDAO] Error en cobrar: " + e.getMessage());

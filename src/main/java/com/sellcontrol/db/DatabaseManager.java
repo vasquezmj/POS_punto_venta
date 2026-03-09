@@ -96,7 +96,7 @@ public class DatabaseManager {
                             fecha_hora     TEXT NOT NULL DEFAULT (datetime('now','localtime')),
                             usuario_id     INTEGER NOT NULL,
                             total          REAL NOT NULL DEFAULT 0,
-                            metodo_pago    TEXT NOT NULL CHECK(metodo_pago IN ('EFECTIVO','TARJETA','SINPE')),
+                            metodo_pago    TEXT NOT NULL CHECK(metodo_pago IN ('EFECTIVO','TARJETA','SINPE','PENDIENTE')),
                             estado         TEXT NOT NULL DEFAULT 'COBRADA' CHECK(estado IN ('COBRADA','PENDIENTE')),
                             cliente_nombre TEXT,
                             FOREIGN KEY (usuario_id) REFERENCES usuarios(id)

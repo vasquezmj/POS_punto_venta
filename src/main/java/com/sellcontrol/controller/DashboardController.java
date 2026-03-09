@@ -28,6 +28,8 @@ public class DashboardController {
     private Button btnGastos;
     @FXML
     private Button btnReportes;
+    @FXML
+    private Button btnTicketConfig;
 
     @FXML
     public void initialize() {
@@ -46,6 +48,8 @@ public class DashboardController {
                 btnGastos.setManaged(false);
                 btnReportes.setVisible(false);
                 btnReportes.setManaged(false);
+                btnTicketConfig.setVisible(false);
+                btnTicketConfig.setManaged(false);
             }
         }
     }
@@ -78,6 +82,11 @@ public class DashboardController {
     @FXML
     private void handleReportes() {
         App.changeScene("reportes.fxml", "Reportes", 1100, 700);
+    }
+
+    @FXML
+    private void handleTicketConfig() {
+        App.changeScene("ticket_config.fxml", "Configurar Ticket", 900, 600);
     }
 
     @FXML

@@ -51,8 +51,6 @@ public class VentaController {
     @FXML
     private TableColumn<DetalleVenta, String> colDetSubtotal;
     @FXML
-    private Label lblTotal;
-    @FXML
     private Label lblTotalTabla;
     @FXML
     private ComboBox<String> cmbMetodoPago;
@@ -151,12 +149,14 @@ public class VentaController {
         colFTotal.setCellValueFactory(c -> new SimpleStringProperty(String.format("₡%.2f", c.getValue().getTotal())));
         colFUsuario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNombreUsuario()));
 
-        // Listener para mostrar/ocultar campo cliente
+        // Listener para mostrar/ocultar campo cliente y método de pago
         chkFiado.selectedProperty().addListener((obs, oldVal, newVal) -> {
             txtClienteNombre.setVisible(newVal);
             txtClienteNombre.setManaged(newVal);
             lblClienteLabel.setVisible(newVal);
             lblClienteLabel.setManaged(newVal);
+            // Ocultar método de pago cuando es fiado
+            cmbMetodoPago.setDisable(newVal);
         });
         txtClienteNombre.setVisible(false);
         txtClienteNombre.setManaged(false);
@@ -169,7 +169,6 @@ public class VentaController {
         // Listener para calcular subtotal en tiempo real
         txtCantidad.textProperty().addListener((obs, oldVal, newVal) -> calcularSubtotalPreview());
 
-        lblTotal.setText("₡0.00");
         if (lblTotalTabla != null)
             lblTotalTabla.setText("₡0.00");
         cargarVentasHoy();
@@ -263,7 +262,6 @@ public class VentaController {
 
         detallesCarrito.add(dv);
         totalVenta += subtotal;
-        lblTotal.setText(String.format("₡%.2f", totalVenta));
         if (lblTotalTabla != null)
             lblTotalTabla.setText(String.format("₡%.2f", totalVenta));
 
@@ -285,7 +283,6 @@ public class VentaController {
         totalVenta -= selected.getSubtotal();
         if (totalVenta < 0)
             totalVenta = 0;
-        lblTotal.setText(String.format("₡%.2f", totalVenta));
         if (lblTotalTabla != null)
             lblTotalTabla.setText(String.format("₡%.2f", totalVenta));
         mostrarMensaje("Producto removido.", false);
@@ -298,9 +295,10 @@ public class VentaController {
             return;
         }
 
-        String metodoPago = cmbMetodoPago.getValue();
-        String estado = chkFiado.isSelected() ? "PENDIENTE" : "COBRADA";
-        String clienteNombre = chkFiado.isSelected() ? txtClienteNombre.getText() : null;
+        boolean esFiado = chkFiado.isSelected();
+        String metodoPago = esFiado ? "PENDIENTE" : cmbMetodoPago.getValue();
+        String estado = esFiado ? "PENDIENTE" : "COBRADA";
+        String clienteNombre = esFiado ? txtClienteNombre.getText() : null;
 
         // --- Pago en efectivo: pedir monto y calcular cambio ---
         double montoPagado = 0;
@@ -381,6 +379,11 @@ public class VentaController {
         if (ventaId > 0) {
             mostrarMensaje("✅ Venta #" + ventaId + " registrada. Total: ₡" + String.format("%.2f", totalVenta), false);
 
+            // Abrir cajón de dinero solo para pagos en efectivo
+            if ("EFECTIVO".equals(metodoPago) && !chkFiado.isSelected()) {
+                ticketPrintService.abrirCajon();
+            }
+
             // Imprimir ticket automáticamente si el checkbox está marcado
             if (chkImprimirTicket != null && chkImprimirTicket.isSelected()) {
                 Venta ventaCompleta = ventaService.buscarPorId(ventaId);
@@ -398,7 +401,6 @@ public class VentaController {
             // Limpiar carrito
             detallesCarrito.clear();
             totalVenta = 0;
-            lblTotal.setText("₡0.00");
             if (lblTotalTabla != null)
                 lblTotalTabla.setText("₡0.00");
             chkFiado.setSelected(false);
@@ -412,12 +414,24 @@ public class VentaController {
 
     @FXML
     private void handleLimpiarCarrito() {
-        detallesCarrito.clear();
-        totalVenta = 0;
-        lblTotal.setText("₡0.00");
-        if (lblTotalTabla != null)
-            lblTotalTabla.setText("₡0.00");
-        mostrarMensaje("Carrito limpiado.", false);
+        if (detallesCarrito.isEmpty()) {
+            mostrarMensaje("El carrito ya está vacío.", false);
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Limpiar Carrito");
+        confirm.setHeaderText("¿Estás seguro de que querés vaciar el carrito?");
+        confirm.setContentText("Se perderán todos los productos agregados a la venta actual.");
+
+        Optional<ButtonType> ans = confirm.showAndWait();
+        if (ans.isPresent() && ans.get() == ButtonType.OK) {
+            detallesCarrito.clear();
+            totalVenta = 0;
+            if (lblTotalTabla != null)
+                lblTotalTabla.setText("₡0.00");
+            mostrarMensaje("Carrito limpiado.", false);
+        }
     }
 
     @FXML
@@ -428,22 +442,124 @@ public class VentaController {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Cobrar Venta Fiada");
-        confirm.setHeaderText("¿Cobrar la venta #" + selected.getId() + " de " +
-                (selected.getClienteNombre() != null ? selected.getClienteNombre() : "cliente") +
-                " por ₡" + String.format("%.2f", selected.getTotal()) + "?");
-        Optional<ButtonType> ans = confirm.showAndWait();
-        if (ans.isPresent() && ans.get() == ButtonType.OK) {
-            String error = ventaService.cobrarVenta(selected.getId());
-            if (error == null) {
-                mostrarMensaje("Venta #" + selected.getId() + " cobrada.", false);
-                cargarVentasHoy();
-                cargarFiados();
-            } else {
+        double totalFiado = selected.getTotal();
+        String cliente = selected.getClienteNombre() != null ? selected.getClienteNombre() : "cliente";
+
+        // Preguntar método de pago
+        ChoiceDialog<String> dlgMetodo = new ChoiceDialog<>("EFECTIVO", "EFECTIVO", "TARJETA", "SINPE");
+        dlgMetodo.setTitle("Cobrar Venta Fiada");
+        dlgMetodo.setHeaderText("Venta #" + selected.getId() + " de " + cliente
+                + "\nTotal: ₡" + String.format("%.2f", totalFiado));
+        dlgMetodo.setContentText("Método de pago:");
+
+        Optional<String> metodoResult = dlgMetodo.showAndWait();
+        if (metodoResult.isEmpty()) {
+            return; // Canceló
+        }
+
+        String metodoPago = metodoResult.get();
+
+        // Si es efectivo, pedir monto y calcular cambio
+        if ("EFECTIVO".equals(metodoPago)) {
+            TextInputDialog dlgPago = new TextInputDialog();
+            dlgPago.setTitle("Pago en Efectivo");
+            dlgPago.setHeaderText(String.format("Total a cobrar: ₡%.2f", totalFiado));
+            dlgPago.setContentText("¿Con cuánto paga el cliente? ₡");
+
+            Optional<String> resultado = dlgPago.showAndWait();
+            if (resultado.isEmpty() || resultado.get().isBlank()) {
+                mostrarMensaje("Cobro cancelado.", true);
+                return;
+            }
+
+            double montoPagado;
+            try {
+                montoPagado = Double.parseDouble(resultado.get().replace(",", "."));
+            } catch (NumberFormatException e) {
+                mostrarMensaje("El monto ingresado no es válido.", true);
+                return;
+            }
+
+            if (montoPagado < totalFiado) {
+                mostrarMensaje(String.format("El monto (₡%.2f) es menor al total (₡%.2f).", montoPagado, totalFiado),
+                        true);
+                return;
+            }
+
+            double cambio = montoPagado - totalFiado;
+
+            // Cobrar la venta
+            String error = ventaService.cobrarVenta(selected.getId(), metodoPago);
+            if (error != null) {
                 mostrarMensaje(error, true);
+                return;
+            }
+
+            // Abrir cajón de dinero
+            ticketPrintService.abrirCajon();
+
+            // Mostrar cambio
+            Dialog<Void> dlgCambio = new Dialog<>();
+            dlgCambio.setTitle("💰 Cambio");
+            dlgCambio.setHeaderText(null);
+
+            VBox contenido = new VBox(12);
+            contenido.setAlignment(Pos.CENTER);
+            contenido.setPadding(new Insets(20, 30, 20, 30));
+            contenido.setStyle("-fx-background-color: #f8f9fa; -fx-background-radius: 8;");
+
+            Label lblTituloCambio = new Label("✅ Venta fiada cobrada");
+            lblTituloCambio.setFont(Font.font("System", FontWeight.BOLD, 16));
+            lblTituloCambio.setStyle("-fx-text-fill: #2c3e50;");
+
+            Label lblTotalDlg = new Label(String.format("Total: ₡%.2f", totalFiado));
+            lblTotalDlg.setFont(Font.font("System", FontWeight.NORMAL, 18));
+            lblTotalDlg.setStyle("-fx-text-fill: #555;");
+
+            Label lblPagoCon = new Label(String.format("Pagó con: ₡%.2f", montoPagado));
+            lblPagoCon.setFont(Font.font("System", FontWeight.NORMAL, 18));
+            lblPagoCon.setStyle("-fx-text-fill: #555;");
+
+            Separator sep = new Separator();
+
+            Label lblCambioTitulo = new Label("CAMBIO A DEVOLVER");
+            lblCambioTitulo.setFont(Font.font("System", FontWeight.BOLD, 14));
+            lblCambioTitulo.setStyle("-fx-text-fill: #7f8c8d;");
+
+            Label lblCambioValor = new Label(String.format("₡%.2f", cambio));
+            lblCambioValor.setFont(Font.font("System", FontWeight.BOLD, 36));
+            lblCambioValor.setStyle("-fx-text-fill: #27ae60;");
+
+            contenido.getChildren().addAll(lblTituloCambio, lblTotalDlg, lblPagoCon, sep, lblCambioTitulo,
+                    lblCambioValor);
+
+            dlgCambio.getDialogPane().setContent(contenido);
+            dlgCambio.getDialogPane().getButtonTypes().add(ButtonType.OK);
+            dlgCambio.getDialogPane().setMinWidth(420);
+            dlgCambio.getDialogPane().setMinHeight(300);
+            dlgCambio.showAndWait();
+
+        } else {
+            // Tarjeta / SINPE: solo confirmar
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Cobrar Venta Fiada");
+            confirm.setHeaderText("¿Cobrar venta #" + selected.getId() + " de " + cliente
+                    + " por ₡" + String.format("%.2f", totalFiado) + " con " + metodoPago + "?");
+            Optional<ButtonType> ans = confirm.showAndWait();
+            if (ans.isEmpty() || ans.get() != ButtonType.OK) {
+                return;
+            }
+
+            String error = ventaService.cobrarVenta(selected.getId(), metodoPago);
+            if (error != null) {
+                mostrarMensaje(error, true);
+                return;
             }
         }
+
+        mostrarMensaje("Venta #" + selected.getId() + " cobrada con " + metodoPago + ".", false);
+        cargarVentasHoy();
+        cargarFiados();
     }
 
     @FXML

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sellcontrol.controller.TicketConfigController"
+            styleClass="dashboard-container">
+
+    <!-- Barra Superior -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="20" styleClass="toolbar">
+            <padding>
+                <Insets top="15" right="20" bottom="15" left="20"/>
+            </padding>
+            <Label text="🎫  Configurar Ticket" styleClass="toolbar-title">
+                <font><Font size="18"/></font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="⬅ Volver" onAction="#handleVolver" styleClass="btn-secondary"/>
+        </HBox>
+    </top>
+
+    <!-- Contenido Central -->
+    <center>
+        <HBox spacing="30" alignment="CENTER">
+            <padding>
+                <Insets top="20" right="30" bottom="20" left="30"/>
+            </padding>
+
+            <!-- Panel izquierdo: Formulario de edición -->
+            <ScrollPane fitToWidth="true" styleClass="card" prefWidth="400">
+            <VBox spacing="12" styleClass="card">
+                <padding>
+                    <Insets top="20" right="25" bottom="20" left="25"/>
+                </padding>
+
+                <Label text="Datos del Ticket" styleClass="section-title">
+                    <font><Font size="16"/></font>
+                </Label>
+
+                <Label text="Nombre del negocio:" styleClass="label-bold"/>
+                <TextField fx:id="txtNombreNegocio" promptText="Ej: MI TIENDA"/>
+
+                <Label text="Subtítulo:" styleClass="label-bold"/>
+                <TextField fx:id="txtSubtitulo" promptText="Ej: SellControl POS"/>
+
+                <Label text="Dirección (opcional):" styleClass="label-bold"/>
+                <TextField fx:id="txtDireccion" promptText="Ej: San José, Costa Rica"/>
+
+                <Label text="Teléfono (opcional):" styleClass="label-bold"/>
+                <TextField fx:id="txtTelefono" promptText="Ej: Tel: 8888-8888"/>
+
+                <Label text="Cédula física/jurídica (opcional):" styleClass="label-bold"/>
+                <TextField fx:id="txtCedula" promptText="Ej: Céd: 3-0101-0123456"/>
+
+                <Separator/>
+
+                <Label text="Dato opcional 1 (opcional):" styleClass="label-bold"/>
+                <TextField fx:id="txtDatoOpcional1" promptText="Ej: Horario, slogan, etc."/>
+
+                <Label text="Dato opcional 2 (opcional):" styleClass="label-bold"/>
+                <TextField fx:id="txtDatoOpcional2" promptText="Ej: Otro dato adicional"/>
+
+                <Separator/>
+
+                <Label text="Mensaje de pie de ticket:" styleClass="label-bold"/>
+                <TextField fx:id="txtPie" promptText="Ej: Gracias por su compra!"/>
+
+                <HBox spacing="10" alignment="CENTER">
+                    <padding>
+                        <Insets top="10"/>
+                    </padding>
+                    <Button text="💾  Guardar Cambios" onAction="#handleGuardar" styleClass="btn-primary"
+                            prefWidth="200" prefHeight="40"/>
+                    <Button text="↩  Restaurar" onAction="#handleRestaurar" styleClass="btn-secondary"
+                            prefWidth="150" prefHeight="40"/>
+                </HBox>
+
+                <Label fx:id="lblMensaje" text="" wrapText="true"/>
+            </VBox>
+            </ScrollPane>
+
+            <!-- Panel derecho: Vista previa del ticket -->
+            <VBox spacing="10" alignment="TOP_CENTER" prefWidth="350" styleClass="card">
+                <padding>
+                    <Insets top="20" right="25" bottom="20" left="25"/>
+                </padding>
+
+                <Label text="Vista Previa" styleClass="section-title">
+                    <font><Font size="16"/></font>
+                </Label>
+
+                <VBox fx:id="vboxPreview" alignment="CENTER" spacing="2"
+                      style="-fx-background-color: white; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 15; -fx-font-family: 'Courier New';">
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

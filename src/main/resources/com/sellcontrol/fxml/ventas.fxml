@@ -40,7 +40,8 @@
                     </padding>
 
                     <!-- Panel izquierdo: agregar productos -->
-                    <VBox spacing="10" prefWidth="320">
+                    <ScrollPane fitToWidth="true" styleClass="scroll-pane" prefWidth="340" minWidth="340">
+                    <VBox spacing="10">
                         <Label text="Agregar producto" styleClass="section-title">
                             <font><Font size="15"/></font>
                         </Label>
@@ -72,17 +73,9 @@
                         <Label fx:id="lblClienteLabel" text="Nombre del cliente:"/>
                         <TextField fx:id="txtClienteNombre" promptText="Nombre del deudor"/>
 
-                        <Separator/>
-
-                        <CheckBox fx:id="chkImprimirTicket" text="Imprimir ticket" selected="true"/>
-
-                        <Label fx:id="lblTotal" text="₡0.00" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
-
-                        <HBox spacing="8">
-                            <Button text="✅ Registrar Venta" onAction="#handleRegistrarVenta" styleClass="btn-primary" prefWidth="160"/>
-                            <Button text="Limpiar" onAction="#handleLimpiarCarrito" styleClass="btn-warning"/>
-                        </HBox>
+                        <!-- The action buttons were moved to the right panel -->
                     </VBox>
+                    </ScrollPane>
 
                     <!-- Panel derecho: carrito -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
@@ -97,12 +90,18 @@
                                 <TableColumn fx:id="colDetSubtotal" text="Subtotal" prefWidth="100"/>
                             </columns>
                         </TableView>
-                        <HBox alignment="CENTER_RIGHT" spacing="10">
+                        <HBox alignment="CENTER_RIGHT" spacing="20">
                             <padding>
-                                <Insets top="5" right="10" bottom="5" left="10"/>
+                                <Insets top="10" right="10" bottom="5" left="10"/>
                             </padding>
-                            <Label text="TOTAL:" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                            <Label fx:id="lblTotalTabla" text="₡0.00" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+                            <CheckBox fx:id="chkImprimirTicket" text="Imprimir ticket" selected="true"/>
+                            <Button text="Limpiar" onAction="#handleLimpiarCarrito" styleClass="btn-warning"/>
+                            <Button text="✅ Registrar Venta" onAction="#handleRegistrarVenta" styleClass="btn-primary" prefHeight="45"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <VBox alignment="CENTER_RIGHT">
+                                <Label text="TOTAL:" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblTotalTabla" text="₡0.00" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+                            </VBox>
                         </HBox>
                     </VBox>
                 </HBox>

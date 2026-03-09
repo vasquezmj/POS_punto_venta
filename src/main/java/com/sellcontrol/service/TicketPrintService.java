@@ -80,6 +80,36 @@ public class TicketPrintService {
     }
 
     /**
+     * Abre el cajón de dinero enviando el comando ESC/POS directamente a la
+     * impresora.
+     * Envía pulso a ambos pines (0 y 1) por compatibilidad.
+     *
+     * @return null si OK, o mensaje de error
+     */
+    public String abrirCajon() {
+        try {
+            PrintService printService = buscarImpresora();
+            if (printService == null) {
+                return "Impresora '" + PRINTER_NAME + "' no encontrada.";
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            out.write(new byte[] { 0x1B, 0x70, 0x00, 0x19, (byte) 0xFA }); // Pin 0
+            out.write(new byte[] { 0x1B, 0x70, 0x01, 0x19, (byte) 0xFA }); // Pin 1
+
+            DocPrintJob job = printService.createPrintJob();
+            Doc doc = new SimpleDoc(out.toByteArray(), DocFlavor.BYTE_ARRAY.AUTOSENSE, null);
+            job.print(doc, new HashPrintRequestAttributeSet());
+
+            System.out.println("[TicketPrint] Cajón de dinero abierto.");
+            return null;
+        } catch (Exception e) {
+            System.err.println("[TicketPrint] Error abriendo cajón: " + e.getMessage());
+            return "Error abriendo cajón: " + e.getMessage();
+        }
+    }
+
+    /**
      * Busca la impresora HOP-H58 entre los servicios de impresión del sistema.
      */
     private PrintService buscarImpresora() {
@@ -109,16 +139,43 @@ public class TicketPrintService {
         // Inicializar
         out.write(ESC_INIT);
 
+        // Leer configuración del ticket
+        TicketConfigService config = new TicketConfigService();
+
         // === Encabezado centrado ===
         out.write(ESC_CENTER);
         out.write(ESC_DOUBLE_HEIGHT);
         out.write(ESC_BOLD_ON);
-        escribirLinea(out, "VERDULERIA VL");
+        escribirLinea(out, config.getNombreNegocio());
         out.write(ESC_NORMAL_SIZE);
         out.write(ESC_BOLD_OFF);
-        escribirLinea(out, "SellControl POS");
+        escribirLinea(out, config.getSubtitulo());
+
+        String dir = config.getDireccion();
+        if (dir != null && !dir.isBlank()) {
+            escribirLinea(out, dir);
+        }
+        String tel = config.getTelefono();
+        if (tel != null && !tel.isBlank()) {
+            escribirLinea(out, tel);
+        }
+        String ced = config.getCedula();
+        if (ced != null && !ced.isBlank()) {
+            escribirLinea(out, ced);
+        }
+
         escribirLinea(out, repetir('=', LINE_WIDTH));
         out.write(ESC_LEFT);
+
+        // === Datos opcionales ===
+        String dato1 = config.getDatoOpcional1();
+        if (dato1 != null && !dato1.isBlank()) {
+            escribirLinea(out, dato1);
+        }
+        String dato2 = config.getDatoOpcional2();
+        if (dato2 != null && !dato2.isBlank()) {
+            escribirLinea(out, dato2);
+        }
 
         // === Datos de la venta ===
         // escribirLinea(out, "Venta #: " + venta.getId());
@@ -184,7 +241,10 @@ public class TicketPrintService {
         // === Pie ===
         out.write(ESC_CENTER);
         escribirLinea(out, "");
-        escribirLinea(out, "Gracias por su compra!");
+        String pie = config.getPie();
+        if (pie != null && !pie.isBlank()) {
+            escribirLinea(out, pie);
+        }
         escribirLinea(out, "");
 
         // Avanzar y cortar

@@ -44,24 +44,29 @@
 
                 <!-- Botones del menú -->
                 <Button fx:id="btnUsuarios" text="👥  Usuarios" onAction="#handleUsuarios"
-                        styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
+                        styleClass="btn-menu" prefWidth="180" prefHeight="120"/>
 
                 <Button fx:id="btnProductos" text="📦  Productos" onAction="#handleProductos"
-                        styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
+                        styleClass="btn-menu" prefWidth="180" prefHeight="120"/>
 
                 <Button fx:id="btnVentas" text="🛒  Ventas" onAction="#handleVentas"
-                        styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
+                        styleClass="btn-menu" prefWidth="180" prefHeight="120"/>
             </HBox>
 
             <HBox alignment="CENTER" spacing="15">
                 <Button fx:id="btnCaja" text="💰  Caja" onAction="#handleCaja"
-                        styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
+                        styleClass="btn-menu" prefWidth="180" prefHeight="120"/>
 
                 <Button fx:id="btnGastos" text="📋  Gastos / Merma" onAction="#handleGastos"
-                        styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
+                        styleClass="btn-menu" prefWidth="180" prefHeight="120"/>
 
                 <Button fx:id="btnReportes" text="📊  Reportes" onAction="#handleReportes"
-                        styleClass="btn-menu" prefWidth="150" prefHeight="100"/>
+                        styleClass="btn-menu" prefWidth="180" prefHeight="120"/>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="15">
+                <Button fx:id="btnTicketConfig" text="🎫  Ticket" onAction="#handleTicketConfig"
+                        styleClass="btn-menu" prefWidth="180" prefHeight="120"/>
             </HBox>
         </VBox>
     </center>

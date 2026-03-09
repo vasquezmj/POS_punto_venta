@@ -73,10 +73,10 @@ public class VentaService {
     }
 
     /**
-     * Cobra una venta pendiente (fiada).
+     * Cobra una venta pendiente (fiada) con el método de pago indicado.
      */
-    public String cobrarVenta(int ventaId) {
-        if (ventaDAO.cobrar(ventaId)) {
+    public String cobrarVenta(int ventaId, String metodoPago) {
+        if (ventaDAO.cobrar(ventaId, metodoPago)) {
             Usuario user = AuthService.getCurrentUser();
             if (user != null) {
                 auditLogDAO.insert(new AuditLog(user.getId(), "COBRAR_VENTA", "VENTA", ventaId));
