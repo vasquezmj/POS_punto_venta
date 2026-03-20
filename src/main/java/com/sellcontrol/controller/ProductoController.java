@@ -185,7 +185,8 @@ public class ProductoController {
         TextField txtNombre = new TextField(existing != null ? existing.getNombre() : "");
         txtNombre.setPromptText("Nombre del producto");
 
-        ComboBox<String> cmbTipo = new ComboBox<>(FXCollections.observableArrayList("FRUTA", "VERDURA", "OTRO"));
+        ComboBox<String> cmbTipo = new ComboBox<>(
+                FXCollections.observableArrayList("FRUTA", "VERDURA", "LEGUMBRES", "OTROS"));
         cmbTipo.setValue(existing != null ? existing.getTipo() : "VERDURA");
 
         ToggleGroup tgUnidad = new ToggleGroup();

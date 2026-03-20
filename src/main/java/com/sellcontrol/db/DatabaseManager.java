@@ -81,7 +81,7 @@ public class DatabaseManager {
                         CREATE TABLE IF NOT EXISTS productos (
                             id                INTEGER PRIMARY KEY AUTOINCREMENT,
                             nombre            TEXT NOT NULL,
-                            tipo              TEXT NOT NULL CHECK(tipo IN ('FRUTA','VERDURA','OTRO')),
+                            tipo              TEXT NOT NULL CHECK(tipo IN ('FRUTA','VERDURA','LEGUMBRES','OTROS')),
                             precio_por_kg     REAL,
                             precio_por_unidad REAL,
                             activo            INTEGER NOT NULL DEFAULT 1,

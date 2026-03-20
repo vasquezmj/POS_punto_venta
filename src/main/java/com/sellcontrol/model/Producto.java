@@ -8,7 +8,7 @@ public class Producto {
 
     private int id;
     private String nombre;
-    private String tipo; // FRUTA | VERDURA | OTRO
+    private String tipo; // FRUTA | VERDURA | LEGUMBRES | OTROS
     private Double precioPorKg;
     private Double precioPorUnidad;
     private boolean activo;
