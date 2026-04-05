@@ -1,5 +1,6 @@
 package com.sellcontrol.db;
 
+import com.sellcontrol.config.AppPaths;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
@@ -15,7 +16,10 @@ import java.sql.Statement;
  */
 public class DatabaseManager {
 
-    private static final String DB_URL = "jdbc:sqlite:sellcontrol.db";
+    private static String getDbUrl() {
+        return "jdbc:sqlite:" + AppPaths.getDbPath().toString();
+    }
+
     private static DatabaseManager instance;
     private Connection connection;
 
@@ -34,7 +38,7 @@ public class DatabaseManager {
      */
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(DB_URL);
+            connection = DriverManager.getConnection(getDbUrl());
             // Habilitar foreign keys en SQLite
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("PRAGMA foreign_keys = ON");

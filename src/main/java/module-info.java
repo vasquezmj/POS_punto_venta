@@ -12,6 +12,7 @@ module com.sellcontrol {
     opens com.sellcontrol.model to javafx.base;
 
     exports com.sellcontrol;
+    exports com.sellcontrol.config;
     exports com.sellcontrol.controller;
     exports com.sellcontrol.model;
     exports com.sellcontrol.service;

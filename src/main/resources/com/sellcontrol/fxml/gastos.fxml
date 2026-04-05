@@ -59,7 +59,7 @@
             </Tab>
 
             <!-- Pestaña Merma -->
-            <Tab text="🗑️ Merma">
+            <Tab text="Merma">
                 <HBox spacing="15">
                     <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
                     <VBox spacing="10" prefWidth="280">

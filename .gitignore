@@ -15,14 +15,29 @@ target/
 *.swp
 *.swo
 *~
+.nb-project/
+nb-configuration.xml
 
 # OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# SQLite database
+# SQLite database (generada en runtime)
 *.db
+
+# Datos de la aplicación (generados en runtime)
+/data/
+/config/
+/logs/
+/reportes/
+/respaldos/
+
+# Configuración local (generada por la app)
+ticket.properties
 
 # Maven wrapper
 !.mvn/wrapper/maven-wrapper.jar
+
+# Gemini AI
+.gemini/

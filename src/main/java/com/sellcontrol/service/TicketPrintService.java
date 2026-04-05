@@ -18,7 +18,10 @@ import java.util.List;
  */
 public class TicketPrintService {
 
-    private static final String PRINTER_NAME = "HOP-H58";
+    private String getPrinterName() {
+        return new TicketConfigService().getPrinterName();
+    }
+
     private static final int LINE_WIDTH = 32; // caracteres útiles en 58mm
     private static final Charset CHARSET = Charset.forName("CP437");
 
@@ -54,9 +57,10 @@ public class TicketPrintService {
     public String imprimir(Venta venta, List<DetalleVenta> detalles, String cajero, double montoPagado, double cambio) {
         try {
             // Buscar impresora por nombre
-            PrintService printService = buscarImpresora();
+            String printerName = getPrinterName();
+            PrintService printService = buscarImpresora(printerName);
             if (printService == null) {
-                return "Impresora '" + PRINTER_NAME + "' no encontrada. Verifique que esté conectada e instalada.";
+                return "Impresora '" + printerName + "' no encontrada. Verifique que esté conectada e instalada.";
             }
 
             // Generar bytes ESC/POS
@@ -67,7 +71,7 @@ public class TicketPrintService {
             Doc doc = new SimpleDoc(ticketData, DocFlavor.BYTE_ARRAY.AUTOSENSE, null);
             job.print(doc, new HashPrintRequestAttributeSet());
 
-            System.out.println("[TicketPrint] Ticket impreso para venta #" + venta.getId() + " en " + PRINTER_NAME);
+            System.out.println("[TicketPrint] Ticket impreso para venta #" + venta.getId() + " en " + printerName);
             return null;
 
         } catch (PrintException e) {
@@ -88,9 +92,10 @@ public class TicketPrintService {
      */
     public String abrirCajon() {
         try {
-            PrintService printService = buscarImpresora();
+            String printerName = getPrinterName();
+            PrintService printService = buscarImpresora(printerName);
             if (printService == null) {
-                return "Impresora '" + PRINTER_NAME + "' no encontrada.";
+                return "Impresora '" + printerName + "' no encontrada.";
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -110,18 +115,20 @@ public class TicketPrintService {
     }
 
     /**
-     * Busca la impresora HOP-H58 entre los servicios de impresión del sistema.
+     * Busca la impresora por nombre entre los servicios de impresión del sistema.
+     * En Windows usa el nombre del driver (ej: "HOP-H58").
+     * En Linux/CUPS usa el nombre configurado en CUPS.
      */
-    private PrintService buscarImpresora() {
+    private PrintService buscarImpresora(String printerName) {
         PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
         for (PrintService ps : services) {
-            if (ps.getName().toLowerCase().contains(PRINTER_NAME.toLowerCase())) {
+            if (ps.getName().toLowerCase().contains(printerName.toLowerCase())) {
                 System.out.println("[TicketPrint] Impresora encontrada: " + ps.getName());
                 return ps;
             }
         }
         // Log todas las impresoras disponibles para debug
-        System.err.println("[TicketPrint] Impresora '" + PRINTER_NAME + "' no encontrada. Disponibles:");
+        System.err.println("[TicketPrint] Impresora '" + printerName + "' no encontrada. Disponibles:");
         for (PrintService ps : services) {
             System.err.println("  - " + ps.getName());
         }

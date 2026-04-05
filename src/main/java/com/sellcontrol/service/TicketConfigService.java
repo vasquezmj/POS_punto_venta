@@ -1,5 +1,7 @@
 package com.sellcontrol.service;
 
+import com.sellcontrol.config.AppPaths;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -12,7 +14,9 @@ import java.util.Properties;
  */
 public class TicketConfigService {
 
-    private static final String CONFIG_FILE = "ticket.properties";
+    private static String getConfigFile() {
+        return AppPaths.getConfigPath().toString();
+    }
 
     // Claves
     private static final String KEY_NOMBRE_NEGOCIO = "nombre_negocio";
@@ -23,6 +27,7 @@ public class TicketConfigService {
     private static final String KEY_DATO_OPCIONAL_1 = "dato_opcional_1";
     private static final String KEY_DATO_OPCIONAL_2 = "dato_opcional_2";
     private static final String KEY_PIE = "pie";
+    private static final String KEY_PRINTER_NAME = "printer_name";
 
     // Valores por defecto
     private static final String DEF_NOMBRE = "VERDULERIA VL";
@@ -33,6 +38,7 @@ public class TicketConfigService {
     private static final String DEF_DATO_1 = "";
     private static final String DEF_DATO_2 = "";
     private static final String DEF_PIE = "Gracias por su compra!";
+    private static final String DEF_PRINTER_NAME = "HOP-H58";
 
     private final Properties props = new Properties();
 
@@ -42,7 +48,7 @@ public class TicketConfigService {
 
     /** Carga las propiedades del archivo. Si no existe, usa valores por defecto. */
     private void cargar() {
-        Path path = Paths.get(CONFIG_FILE);
+        Path path = Paths.get(getConfigFile());
         if (Files.exists(path)) {
             try (Reader r = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
                 props.load(r);
@@ -59,11 +65,12 @@ public class TicketConfigService {
         props.putIfAbsent(KEY_DATO_OPCIONAL_1, DEF_DATO_1);
         props.putIfAbsent(KEY_DATO_OPCIONAL_2, DEF_DATO_2);
         props.putIfAbsent(KEY_PIE, DEF_PIE);
+        props.putIfAbsent(KEY_PRINTER_NAME, DEF_PRINTER_NAME);
     }
 
     /** Guarda las propiedades actuales al archivo. */
     public void guardar() {
-        try (Writer w = new OutputStreamWriter(new FileOutputStream(CONFIG_FILE), StandardCharsets.UTF_8)) {
+        try (Writer w = new OutputStreamWriter(new FileOutputStream(getConfigFile()), StandardCharsets.UTF_8)) {
             props.store(w, "Configuración del ticket de venta");
             System.out.println("[TicketConfig] Configuración guardada.");
         } catch (IOException e) {
@@ -104,6 +111,10 @@ public class TicketConfigService {
         return props.getProperty(KEY_DATO_OPCIONAL_2, DEF_DATO_2);
     }
 
+    public String getPrinterName() {
+        return props.getProperty(KEY_PRINTER_NAME, DEF_PRINTER_NAME);
+    }
+
     // --- Setters ---
     public void setNombreNegocio(String val) {
         props.setProperty(KEY_NOMBRE_NEGOCIO, val != null ? val : "");
@@ -135,5 +146,9 @@ public class TicketConfigService {
 
     public void setPie(String val) {
         props.setProperty(KEY_PIE, val != null ? val : "");
+    }
+
+    public void setPrinterName(String val) {
+        props.setProperty(KEY_PRINTER_NAME, val != null && !val.isBlank() ? val : DEF_PRINTER_NAME);
     }
 }
