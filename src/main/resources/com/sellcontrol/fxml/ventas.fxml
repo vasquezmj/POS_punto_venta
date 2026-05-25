@@ -32,79 +32,26 @@
                 <Insets top="10" right="10" bottom="0" left="10"/>
             </padding>
 
-            <!-- Pestaña: Nueva Venta -->
-            <Tab text="🛒 Nueva Venta">
-                <HBox spacing="15">
-                    <padding>
-                        <Insets top="15" right="15" bottom="15" left="15"/>
-                    </padding>
-
-                    <!-- Panel izquierdo: agregar productos -->
-                    <ScrollPane fitToWidth="true" styleClass="scroll-pane" prefWidth="340" minWidth="340">
-                    <VBox spacing="10">
-                        <Label text="Agregar producto" styleClass="section-title">
-                            <font><Font size="15"/></font>
-                        </Label>
-
-                        <Label text="Buscar ID o Nombre:"/>
-                        <TextField fx:id="txtBuscarProducto" promptText="Ingrese ID o nombre del producto..."/>
-
-                        <Label text="Producto seleccionado:"/>
-                        <ComboBox fx:id="cmbProducto" maxWidth="Infinity" promptText="Seleccione un producto"/>
-
-                        <Label fx:id="lblPrecioUnitario" text="—" style="-fx-text-fill: #7f8c8d;"/>
-
-                        <Label text="Cantidad:"/>
-                        <TextField fx:id="txtCantidad" promptText="Ej: 1.5"/>
-
-                        <Label fx:id="lblSubtotal" text="₡0.00" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
-
-                        <HBox spacing="8">
-                            <Button text="➕ Agregar" onAction="#handleAgregarProducto" styleClass="btn-primary"/>
-                            <Button text="➖ Quitar" onAction="#handleQuitarProducto" styleClass="btn-danger"/>
-                        </HBox>
-
-                        <Separator/>
-
-                        <Label text="Método de pago:"/>
-                        <ComboBox fx:id="cmbMetodoPago" maxWidth="Infinity"/>
-
-                        <CheckBox fx:id="chkFiado" text="Venta fiada (pendiente)"/>
-                        <Label fx:id="lblClienteLabel" text="Nombre del cliente:"/>
-                        <TextField fx:id="txtClienteNombre" promptText="Nombre del deudor"/>
-
-                        <!-- The action buttons were moved to the right panel -->
-                    </VBox>
-                    </ScrollPane>
-
-                    <!-- Panel derecho: carrito -->
-                    <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label text="Carrito de venta" styleClass="section-title">
-                            <font><Font size="15"/></font>
-                        </Label>
-                        <TableView fx:id="tablaDetalle" VBox.vgrow="ALWAYS" styleClass="data-table">
-                            <columns>
-                                <TableColumn fx:id="colDetProducto" text="Producto" prefWidth="200"/>
-                                <TableColumn fx:id="colDetCantidad" text="Cantidad" prefWidth="90"/>
-                                <TableColumn fx:id="colDetUnidad" text="Unidad" prefWidth="80"/>
-                                <TableColumn fx:id="colDetSubtotal" text="Subtotal" prefWidth="100"/>
-                            </columns>
-                        </TableView>
-                        <HBox alignment="CENTER_RIGHT" spacing="20">
+            <!-- Pestaña: Ventas Activas -->
+            <Tab text="🛒 Ventas Activas">
+                <BorderPane>
+                    <top>
+                        <HBox spacing="15" alignment="CENTER_LEFT">
                             <padding>
-                                <Insets top="10" right="10" bottom="5" left="10"/>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
                             </padding>
-                            <CheckBox fx:id="chkImprimirTicket" text="Imprimir ticket" selected="true"/>
-                            <Button text="Limpiar" onAction="#handleLimpiarCarrito" styleClass="btn-warning"/>
-                            <Button text="✅ Registrar Venta" onAction="#handleRegistrarVenta" styleClass="btn-primary" prefHeight="45"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <VBox alignment="CENTER_RIGHT">
-                                <Label text="TOTAL:" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                                <Label fx:id="lblTotalTabla" text="₡0.00" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
-                            </VBox>
+                            <Button text="➕ Nueva Venta" onAction="#handleNuevaVentaTab" styleClass="btn-primary"/>
+                            <Label text="Puede mantener abiertas múltiples ventas independientes y cobrarlas por separado." styleClass="status-label"/>
                         </HBox>
-                    </VBox>
-                </HBox>
+                    </top>
+                    <center>
+                        <TabPane fx:id="tabPaneActivas" tabClosingPolicy="ALL_TABS">
+                            <padding>
+                                <Insets top="5" right="5" bottom="5" left="5"/>
+                            </padding>
+                        </TabPane>
+                    </center>
+                </BorderPane>
             </Tab>
 
             <!-- Pestaña: Ventas del Día -->

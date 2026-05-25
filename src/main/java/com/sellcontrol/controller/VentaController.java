@@ -29,39 +29,9 @@ import java.util.Optional;
  */
 public class VentaController {
 
-    // --- Pestaña Nueva Venta ---
+    // --- Pestaña Ventas Activas ---
     @FXML
-    private TextField txtBuscarProducto;
-    @FXML
-    private ComboBox<Producto> cmbProducto;
-    @FXML
-    private TextField txtCantidad;
-    @FXML
-    private Label lblPrecioUnitario;
-    @FXML
-    private Label lblSubtotal;
-    @FXML
-    private TableView<DetalleVenta> tablaDetalle;
-    @FXML
-    private TableColumn<DetalleVenta, String> colDetProducto;
-    @FXML
-    private TableColumn<DetalleVenta, String> colDetCantidad;
-    @FXML
-    private TableColumn<DetalleVenta, String> colDetUnidad;
-    @FXML
-    private TableColumn<DetalleVenta, String> colDetSubtotal;
-    @FXML
-    private Label lblTotalTabla;
-    @FXML
-    private ComboBox<String> cmbMetodoPago;
-    @FXML
-    private CheckBox chkFiado;
-    @FXML
-    private TextField txtClienteNombre;
-    @FXML
-    private Label lblClienteLabel;
-    @FXML
-    private CheckBox chkImprimirTicket;
+    private TabPane tabPaneActivas;
 
     // --- Pestaña Ventas del Día ---
     @FXML
@@ -98,35 +68,11 @@ public class VentaController {
     @FXML
     private Label lblMensaje;
 
-    private final ProductoService productoService = new ProductoService();
     private final VentaService ventaService = new VentaService();
     private final TicketPrintService ticketPrintService = new TicketPrintService();
-    private final ObservableList<DetalleVenta> detallesCarrito = FXCollections.observableArrayList();
-    private double totalVenta = 0;
 
     @FXML
     public void initialize() {
-        // Cargar productos activos en combo
-        List<Producto> productosActivos = productoService.listarActivos();
-        cmbProducto.setItems(FXCollections.observableArrayList(productosActivos));
-
-        // Listener para búsqueda por ID o Nombre
-        txtBuscarProducto.textProperty()
-                .addListener((obs, oldVal, newVal) -> filtrarProductos(newVal, productosActivos));
-
-        // Métodos de pago
-        cmbMetodoPago.setItems(FXCollections.observableArrayList("EFECTIVO", "TARJETA", "SINPE"));
-        cmbMetodoPago.setValue("EFECTIVO");
-
-        // Configurar tabla del carrito
-        colDetProducto.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNombreProducto()));
-        colDetCantidad
-                .setCellValueFactory(c -> new SimpleStringProperty(String.format("%.2f", c.getValue().getCantidad())));
-        colDetUnidad.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTipoUnidad()));
-        colDetSubtotal
-                .setCellValueFactory(c -> new SimpleStringProperty(String.format("₡%.2f", c.getValue().getSubtotal())));
-        tablaDetalle.setItems(detallesCarrito);
-
         // Configurar tabla ventas del día
         colVId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colVFecha.setCellValueFactory(new PropertyValueFactory<>("fechaHora"));
@@ -149,289 +95,90 @@ public class VentaController {
         colFTotal.setCellValueFactory(c -> new SimpleStringProperty(String.format("₡%.2f", c.getValue().getTotal())));
         colFUsuario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNombreUsuario()));
 
-        // Listener para mostrar/ocultar campo cliente y método de pago
-        chkFiado.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            txtClienteNombre.setVisible(newVal);
-            txtClienteNombre.setManaged(newVal);
-            lblClienteLabel.setVisible(newVal);
-            lblClienteLabel.setManaged(newVal);
-            // Ocultar método de pago cuando es fiado
-            cmbMetodoPago.setDisable(newVal);
-        });
-        txtClienteNombre.setVisible(false);
-        txtClienteNombre.setManaged(false);
-        lblClienteLabel.setVisible(false);
-        lblClienteLabel.setManaged(false);
+        cargarVentasHoy();
+        cargarFiados();
 
-        // Listener para mostrar precio al seleccionar producto
-        cmbProducto.setOnAction(e -> actualizarPrecioUnitario());
+        // Abrir la primera pestaña de venta automáticamente al iniciar
+        handleNuevaVentaTab();
+    }
 
-        // Listener para calcular subtotal en tiempo real
-        txtCantidad.textProperty().addListener((obs, oldVal, newVal) -> calcularSubtotalPreview());
+    @FXML
+    public void handleNuevaVentaTab() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/com/sellcontrol/fxml/venta_tab.fxml"));
+            javafx.scene.Parent tabContent = loader.load();
+            VentaTabController tabController = loader.getController();
+            tabController.setParentController(this);
 
-        if (lblTotalTabla != null)
-            lblTotalTabla.setText("₡0.00");
+            int numero = calcularSiguienteNumeroTab();
+            Tab tab = new Tab("Venta " + numero);
+            tab.setContent(tabContent);
+            tab.setUserData(tabController);
+            tabController.setTab(tab);
+
+            // Al cerrar la pestaña, verificar si el carrito tiene productos
+            tab.setOnCloseRequest(event -> {
+                if (!tabController.isCartEmpty()) {
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirm.setTitle("Confirmar Cierre");
+                    confirm.setHeaderText("La pestaña tiene productos en el carrito.");
+                    confirm.setContentText("¿Está seguro de que desea cerrar esta pestaña? Se perderán los cambios.");
+                    Optional<ButtonType> result = confirm.showAndWait();
+                    if (result.isEmpty() || result.get() != ButtonType.OK) {
+                        event.consume(); // Cancelar cierre
+                    }
+                }
+            });
+
+            tabPaneActivas.getTabs().add(tab);
+            tabPaneActivas.getSelectionModel().select(tab);
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarMensaje("Error al crear pestaña de venta: " + e.getMessage(), true);
+        }
+    }
+
+    /**
+     * Calcula el número más bajo disponible para nombrar una nueva pestaña de venta.
+     * Si existen "Venta 1" y "Venta 3", retorna 2.
+     */
+    private int calcularSiguienteNumeroTab() {
+        java.util.Set<Integer> usados = new java.util.HashSet<>();
+        for (Tab tab : tabPaneActivas.getTabs()) {
+            String titulo = tab.getText();
+            if (titulo != null && titulo.startsWith("Venta ")) {
+                try {
+                    usados.add(Integer.parseInt(titulo.substring(6)));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        int numero = 1;
+        while (usados.contains(numero)) {
+            numero++;
+        }
+        return numero;
+    }
+
+    public void recargarVentasYFiados() {
         cargarVentasHoy();
         cargarFiados();
     }
 
-    private void filtrarProductos(String filtro, List<Producto> todos) {
-        if (filtro == null || filtro.trim().isEmpty()) {
-            cmbProducto.setItems(FXCollections.observableArrayList(todos));
-            return;
-        }
-        String f = filtro.toLowerCase().trim();
-        List<Producto> filtrados = todos.stream()
-                .filter(p -> String.valueOf(p.getId()).startsWith(f) || p.getNombre().toLowerCase().contains(f))
-                .toList();
+    /**
+     * Cierra la pestaña de venta después de registrar una venta exitosa.
+     * Siempre garantiza que quede al menos una pestaña de venta abierta.
+     */
+    public void cerrarTabDespuesDeVenta(Tab tab) {
+        if (tab == null) return;
 
-        cmbProducto.setItems(FXCollections.observableArrayList(filtrados));
-        if (filtrados.size() == 1) {
-            cmbProducto.setValue(filtrados.get(0));
-            // Opcional: enfocar en cantidad si encuentra un solo producto
-            txtCantidad.requestFocus();
-        } else if (!filtrados.isEmpty()) {
-            cmbProducto.show();
-        }
-    }
-
-    private void actualizarPrecioUnitario() {
-        Producto p = cmbProducto.getValue();
-        if (p != null) {
-            lblPrecioUnitario.setText(String.format("$%.2f / %s", p.getPrecioActivo(), p.getUnidadVenta()));
-        } else {
-            lblPrecioUnitario.setText("—");
-        }
-        calcularSubtotalPreview();
-    }
-
-    private void calcularSubtotalPreview() {
-        Producto p = cmbProducto.getValue();
-        String cantStr = txtCantidad.getText();
-        if (p != null && cantStr != null && !cantStr.isBlank()) {
-            try {
-                double cant = Double.parseDouble(cantStr.replace(",", "."));
-                double sub = cant * p.getPrecioActivo();
-                lblSubtotal.setText(String.format("₡%.2f", sub));
-                return;
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        lblSubtotal.setText("₡0.00");
-    }
-
-    @FXML
-    private void handleAgregarProducto() {
-        Producto p = cmbProducto.getValue();
-        if (p == null) {
-            mostrarMensaje("Seleccione un producto.", true);
+        if (tabPaneActivas.getTabs().size() <= 1) {
+            // Es la única pestaña: no cerrar, ya quedó limpia
             return;
         }
 
-        String cantStr = txtCantidad.getText();
-        if (cantStr == null || cantStr.isBlank()) {
-            mostrarMensaje("Ingrese una cantidad.", true);
-            return;
-        }
-
-        double cantidad;
-        try {
-            cantidad = Double.parseDouble(cantStr.replace(",", "."));
-            if (cantidad <= 0) {
-                mostrarMensaje("La cantidad debe ser mayor a 0.", true);
-                return;
-            }
-            // Productos por unidad solo aceptan cantidades enteras
-            if (!p.isVentaPorKg() && cantidad != Math.floor(cantidad)) {
-                mostrarMensaje("Este producto se vende por unidad. Ingrese un número entero.", true);
-                return;
-            }
-        } catch (NumberFormatException e) {
-            mostrarMensaje("Cantidad no válida.", true);
-            return;
-        }
-
-        double subtotal = cantidad * p.getPrecioActivo();
-
-        DetalleVenta dv = new DetalleVenta();
-        dv.setProductoId(p.getId());
-        dv.setNombreProducto(p.getNombre());
-        dv.setCantidad(cantidad);
-        dv.setTipoUnidad(p.getUnidadVenta().toUpperCase().equals("KG") ? "KG" : "UNIDAD");
-        dv.setSubtotal(subtotal);
-
-        detallesCarrito.add(dv);
-        totalVenta += subtotal;
-        if (lblTotalTabla != null)
-            lblTotalTabla.setText(String.format("₡%.2f", totalVenta));
-
-        // Limpiar inputs
-        txtBuscarProducto.clear();
-        txtCantidad.clear();
-        lblSubtotal.setText("₡0.00");
-        mostrarMensaje(p.getNombre() + " agregado.", false);
-    }
-
-    @FXML
-    private void handleQuitarProducto() {
-        DetalleVenta selected = tablaDetalle.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            mostrarMensaje("Seleccione un producto del carrito.", true);
-            return;
-        }
-        detallesCarrito.remove(selected);
-        totalVenta -= selected.getSubtotal();
-        if (totalVenta < 0)
-            totalVenta = 0;
-        if (lblTotalTabla != null)
-            lblTotalTabla.setText(String.format("₡%.2f", totalVenta));
-        mostrarMensaje("Producto removido.", false);
-    }
-
-    @FXML
-    private void handleRegistrarVenta() {
-        if (detallesCarrito.isEmpty()) {
-            mostrarMensaje("El carrito está vacío.", true);
-            return;
-        }
-
-        boolean esFiado = chkFiado.isSelected();
-        String metodoPago = esFiado ? "PENDIENTE" : cmbMetodoPago.getValue();
-        String estado = esFiado ? "PENDIENTE" : "COBRADA";
-        String clienteNombre = esFiado ? txtClienteNombre.getText() : null;
-
-        // --- Pago en efectivo: pedir monto y calcular cambio ---
-        double montoPagado = 0;
-        double cambio = 0;
-
-        if ("EFECTIVO".equals(metodoPago) && !chkFiado.isSelected()) {
-            TextInputDialog dlgPago = new TextInputDialog();
-            dlgPago.setTitle("Pago en Efectivo");
-            dlgPago.setHeaderText(String.format("Total a cobrar: ₡%.2f", totalVenta));
-            dlgPago.setContentText("¿Con cuánto paga el cliente? ₡");
-
-            Optional<String> resultado = dlgPago.showAndWait();
-            if (resultado.isEmpty() || resultado.get().isBlank()) {
-                mostrarMensaje("Venta cancelada (no se ingresó monto de pago).", true);
-                return;
-            }
-
-            try {
-                montoPagado = Double.parseDouble(resultado.get().replace(",", "."));
-            } catch (NumberFormatException e) {
-                mostrarMensaje("El monto ingresado no es válido.", true);
-                return;
-            }
-
-            if (montoPagado < totalVenta) {
-                mostrarMensaje(String.format("El monto (₡%.2f) es menor al total (₡%.2f).", montoPagado, totalVenta),
-                        true);
-                return;
-            }
-
-            cambio = montoPagado - totalVenta;
-
-            // Mostrar cambio al cajero con diálogo personalizado
-            Dialog<Void> dlgCambio = new Dialog<>();
-            dlgCambio.setTitle("💰 Cambio");
-            dlgCambio.setHeaderText(null);
-
-            VBox contenido = new VBox(12);
-            contenido.setAlignment(Pos.CENTER);
-            contenido.setPadding(new Insets(20, 30, 20, 30));
-            contenido.setStyle("-fx-background-color: #f8f9fa; -fx-background-radius: 8;");
-
-            Label lblTituloCambio = new Label("✅ Venta registrada");
-            lblTituloCambio.setFont(Font.font("System", FontWeight.BOLD, 16));
-            lblTituloCambio.setStyle("-fx-text-fill: #2c3e50;");
-
-            Label lblTotalDlg = new Label(String.format("Total: ₡%.2f", totalVenta));
-            lblTotalDlg.setFont(Font.font("System", FontWeight.NORMAL, 18));
-            lblTotalDlg.setStyle("-fx-text-fill: #555;");
-
-            Label lblPagoCon = new Label(String.format("Pagó con: ₡%.2f", montoPagado));
-            lblPagoCon.setFont(Font.font("System", FontWeight.NORMAL, 18));
-            lblPagoCon.setStyle("-fx-text-fill: #555;");
-
-            Separator sep = new Separator();
-
-            Label lblCambioTitulo = new Label("CAMBIO A DEVOLVER");
-            lblCambioTitulo.setFont(Font.font("System", FontWeight.BOLD, 14));
-            lblCambioTitulo.setStyle("-fx-text-fill: #7f8c8d;");
-
-            Label lblCambioValor = new Label(String.format("₡%.2f", cambio));
-            lblCambioValor.setFont(Font.font("System", FontWeight.BOLD, 36));
-            lblCambioValor.setStyle("-fx-text-fill: #27ae60;");
-
-            contenido.getChildren().addAll(lblTituloCambio, lblTotalDlg, lblPagoCon, sep, lblCambioTitulo,
-                    lblCambioValor);
-
-            dlgCambio.getDialogPane().setContent(contenido);
-            dlgCambio.getDialogPane().getButtonTypes().add(ButtonType.OK);
-            dlgCambio.getDialogPane().setMinWidth(420);
-            dlgCambio.getDialogPane().setMinHeight(300);
-            dlgCambio.showAndWait();
-        }
-
-        List<DetalleVenta> detalles = new ArrayList<>(detallesCarrito);
-        int ventaId = ventaService.registrarVenta(metodoPago, estado, clienteNombre, detalles);
-
-        if (ventaId > 0) {
-            mostrarMensaje("✅ Venta #" + ventaId + " registrada. Total: ₡" + String.format("%.2f", totalVenta), false);
-
-            // Abrir cajón de dinero solo para pagos en efectivo
-            if ("EFECTIVO".equals(metodoPago) && !chkFiado.isSelected()) {
-                ticketPrintService.abrirCajon();
-            }
-
-            // Imprimir ticket automáticamente si el checkbox está marcado
-            if (chkImprimirTicket != null && chkImprimirTicket.isSelected()) {
-                Venta ventaCompleta = ventaService.buscarPorId(ventaId);
-                if (ventaCompleta != null) {
-                    List<DetalleVenta> detallesImprimir = ventaService.obtenerDetalles(ventaId);
-                    String cajero = ventaCompleta.getNombreUsuario() != null ? ventaCompleta.getNombreUsuario() : "—";
-                    String errorTicket = ticketPrintService.imprimir(ventaCompleta, detallesImprimir, cajero,
-                            montoPagado, cambio);
-                    if (errorTicket != null) {
-                        mostrarMensaje("Venta registrada, pero error al imprimir: " + errorTicket, true);
-                    }
-                }
-            }
-
-            // Limpiar carrito
-            detallesCarrito.clear();
-            totalVenta = 0;
-            if (lblTotalTabla != null)
-                lblTotalTabla.setText("₡0.00");
-            chkFiado.setSelected(false);
-            txtClienteNombre.clear();
-            cargarVentasHoy();
-            cargarFiados();
-        } else {
-            mostrarMensaje("Error al registrar la venta.", true);
-        }
-    }
-
-    @FXML
-    private void handleLimpiarCarrito() {
-        if (detallesCarrito.isEmpty()) {
-            mostrarMensaje("El carrito ya está vacío.", false);
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Limpiar Carrito");
-        confirm.setHeaderText("¿Estás seguro de que querés vaciar el carrito?");
-        confirm.setContentText("Se perderán todos los productos agregados a la venta actual.");
-
-        Optional<ButtonType> ans = confirm.showAndWait();
-        if (ans.isPresent() && ans.get() == ButtonType.OK) {
-            detallesCarrito.clear();
-            totalVenta = 0;
-            if (lblTotalTabla != null)
-                lblTotalTabla.setText("₡0.00");
-            mostrarMensaje("Carrito limpiado.", false);
-        }
+        // Hay más de una pestaña, cerrar esta
+        tabPaneActivas.getTabs().remove(tab);
     }
 
     @FXML
@@ -626,10 +373,14 @@ public class VentaController {
 
     @FXML
     private void handleRefrescar() {
-        cargarVentasHoy();
-        cargarFiados();
-        // Recargar productos activos
-        cmbProducto.setItems(FXCollections.observableArrayList(productoService.listarActivos()));
+        recargarVentasYFiados();
+        // Recargar productos en todas las pestañas de ventas activas
+        for (Tab tab : tabPaneActivas.getTabs()) {
+            Object data = tab.getUserData();
+            if (data instanceof VentaTabController) {
+                ((VentaTabController) data).recargarProductos();
+            }
+        }
         mostrarMensaje("Datos actualizados.", false);
     }
 
@@ -638,7 +389,7 @@ public class VentaController {
         App.changeScene("dashboard.fxml", "Panel Principal", 900, 600);
     }
 
-    private void mostrarMensaje(String msg, boolean esError) {
+    public void mostrarMensaje(String msg, boolean esError) {
         lblMensaje.setText(msg);
         lblMensaje.setStyle(esError ? "-fx-text-fill: #e74c3c;" : "-fx-text-fill: #27ae60;");
     }
